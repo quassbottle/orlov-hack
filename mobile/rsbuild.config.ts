@@ -8,8 +8,5 @@ export default defineConfig({
         distPath: {
             root: 'build',
         },
-        server: {
-            base: '/app'
-        }
     },
 })
