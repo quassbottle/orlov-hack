@@ -1,6 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, Type } from 'class-transformer';
-import { IsArray, IsDate, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Expose } from 'class-transformer';
+import {
+    IsDate,
+    IsNumber,
+    IsString,
+} from 'class-validator';
 
 export class TokenDto {
     @ApiProperty()
@@ -23,14 +27,4 @@ export class SignInResponseDto {
     @Expose()
     @IsString()
     token: string;
-}
-
-export class SignInPrivyDto {
-    @ApiProperty({ required: true })
-    @IsString()
-    idToken: string;
-
-    @ApiProperty({ required: true })
-    @IsString()
-    authToken: string;
 }
