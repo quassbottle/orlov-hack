@@ -1,0 +1,17 @@
+name: backend
+
+services:
+    database:
+        image: postgres:16
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: 'admin'
+            POSTGRES_PASSWORD: 'password'
+            POSTGRES_DB: 'inspector'
+        ports:
+            - '5564:5432'
+        volumes:
+            - database-pg:/var/lib/postgresql/data
+
+volumes:
+    database-pg:
