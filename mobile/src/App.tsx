@@ -1,7 +1,7 @@
 function App() {
     return (
         <>
-            <p>Hello, world!!!!!</p>
+            <p className="animate-bounce p-4">Hello, world!!!!!!!</p>
         </>
     )
 }
