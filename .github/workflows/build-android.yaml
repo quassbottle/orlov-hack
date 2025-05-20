@@ -85,6 +85,6 @@ jobs:
           name: "Build ${{ env.SHORT_SHA }}"
           draft: false
           prerelease: false
-          files: ${{ env.APK_NAME }}
+          files: mobile/${{ env.APK_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
