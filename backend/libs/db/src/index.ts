@@ -1,5 +1,4 @@
-import { Prisma, PrismaClient } from '../generated/prisma';
-import { DefaultArgs } from '../generated/prisma/runtime/library';
+import { Prisma } from '../generated/prisma';
 
 export * from './prisma.module';
 export * from './prisma.service';
