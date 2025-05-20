@@ -6,8 +6,6 @@ permissions:
 on:
   push:
     branches: [mobile]
-    paths:
-      - "mobile/**"
 
 env:
   APP_NAME: Inspector
@@ -55,12 +53,12 @@ jobs:
         run: npm run build:android
 
       - name: Build APK
-        working-directory: android
+        working-directory: mobile/android
         run: ./gradlew assemble
 
       - name: Compute checksum and rename APK
         run: |
-          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+          APK_PATH="mobile/android/app/build/outputs/apk/debug/app-debug.apk"
           CHECKSUM=$(sha256sum "$APK_PATH" | cut -c1-8)
           NEW_NAME="app-debug-${CHECKSUM}.apk"
           mv "$APK_PATH" "$NEW_NAME"
