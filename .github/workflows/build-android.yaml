@@ -1,0 +1,86 @@
+name: Build Android APK
+
+permissions:
+    contents: write
+
+on:
+    push:
+        branches: [mobile]
+        paths:
+          - 'frontend/**'
+
+env:
+    APP_NAME: Inspector
+
+jobs:
+    build:
+        name: Build APK
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Get short SHA
+              id: vars
+              run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+            - name: Set up JDK
+              uses: actions/setup-java@v3
+              with:
+                  distribution: 'temurin'
+                  java-version: '21'
+
+            - name: Setup Gradle cache
+              uses: gradle/actions/setup-gradle@v4
+
+            - name: Set gradlew executable permission
+              run: chmod +x ./android/gradlew
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+            - name: Install npm dependencies
+              run: npm install
+
+            - name: Build Android with npm
+              run: npm run build:android
+
+            - name: Build APK
+              working-directory: android
+              run: ./gradlew assemble
+
+            - name: Compute checksum and rename APK
+              run: |
+                  APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+                  CHECKSUM=$(sha256sum "$APK_PATH" | cut -c1-8)
+                  NEW_NAME="app-debug-${CHECKSUM}.apk"
+                  mv "$APK_PATH" "$NEW_NAME"
+                  echo "APK_NAME=$NEW_NAME" >> $GITHUB_ENV
+
+            - name: Create GitHub Release with Tag
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  TAG_NAME="mobile-${SHORT_SHA}"
+                  if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+                    echo "Release with tag $TAG_NAME already exists"
+                  else
+                    gh release create "$TAG_NAME" \
+                      --title "Build $SHORT_SHA" \
+                      --notes "Automated release from workflow"
+                    echo "Created GitHub release with tag $TAG_NAME"
+                  fi
+
+            - name: Upload APK to Release
+              uses: softprops/action-gh-release@v1
+              with:
+                  tag_name: mobile-${{ env.SHORT_SHA }}
+                  name: 'Build ${{ env.SHORT_SHA }}'
+                  draft: false
+                  prerelease: false
+                  files: ${{ env.APK_NAME }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

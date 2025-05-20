@@ -1,0 +1,80 @@
+{
+  "name": "mobile",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@capacitor-community/camera-preview": "^7.0.1",
+    "@capacitor/android": "^7.1.0",
+    "@capacitor/camera": "^7.0.1",
+    "@capacitor/cli": "^7.1.0",
+    "@capacitor/core": "^7.1.0",
+    "@capacitor/device": "^7.0.1",
+    "@capacitor/geolocation": "^7.1.1",
+    "@fontsource/inter": "^5.2.5",
+    "@hookform/resolvers": "^5.0.1",
+    "@reduxjs/toolkit": "^2.6.1",
+    "@tailwindcss/postcss": "^4.0.17",
+    "@tanstack/react-query": "^5.72.2",
+    "@types/node": "^22.13.14",
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4",
+    "postcss": "^8.5.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-easy-crop": "^5.4.1",
+    "react-hook-form": "^7.55.0",
+    "react-hot-toast": "^2.5.2",
+    "react-image-crop": "^11.0.7",
+    "react-leaflet": "^5.0.0",
+    "react-redux": "^9.2.0",
+    "react-router": "^7.5.0",
+    "tailwind-merge": "^3.2.0",
+    "tailwind-variants": "^1.0.0",
+    "tailwindcss": "^4.0.17",
+    "typescript": "^5.8.2",
+    "web-vitals": "^2.1.4",
+    "yup": "^1.6.1"
+  },
+  "scripts": {
+    "start": "rsbuild dev",
+    "build": "rsbuild build",
+    "build:android": "rsbuild build && cap sync android",
+    "preview": "rsbuild preview",
+    "lint": "eslint src",
+    "android:sync": "cap sync android",
+    "android:open": "cap open android",
+    "android:assets": "exec @capacitor/assets generate --android"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.23.0",
+    "@rsbuild/core": "^1.3.0",
+    "@rsbuild/plugin-node-polyfill": "^1.3.0",
+    "@rsbuild/plugin-react": "^1.1.1",
+    "eslint": "^9.23.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.5",
+    "eslint-plugin-react": "^7.37.4",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "typescript-eslint": "^8.28.0"
+  }
+}
