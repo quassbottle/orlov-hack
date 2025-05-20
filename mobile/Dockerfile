@@ -18,6 +18,8 @@ RUN mkdir -p /home/node/app
 WORKDIR /home/node/app
 COPY --chown=node --from=build /home/node/app .
 
+RUN pnpm install -g serve
+
 EXPOSE 3000
 
 CMD ["serve", "-s", "build", "-l", "3000"]
