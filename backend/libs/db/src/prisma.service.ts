@@ -3,14 +3,24 @@ import { PrismaClient } from '../generated/prisma';
 
 @Injectable()
 export class PrismaService
-  extends PrismaClient
-  implements OnModuleDestroy, OnModuleInit
+    extends PrismaClient
+    implements OnModuleDestroy, OnModuleInit
 {
-  async onModuleDestroy() {
-    await this.$disconnect();
-  }
+    constructor() {
+        super({
+            datasources: {
+                db: {
+                    url: process.env.DATABASE_URL,
+                },
+            },
+        });
+    }
 
-  async onModuleInit() {
-    await this.$connect();
-  }
+    async onModuleDestroy() {
+        await this.$disconnect();
+    }
+
+    async onModuleInit() {
+        await this.$connect();
+    }
 }
