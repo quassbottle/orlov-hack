@@ -33,7 +33,6 @@ const setupDocumentation = async (app: INestApplication) => {
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.setGlobalPrefix('api');
   app.enableVersioning({
     type: VersioningType.URI,
   });
