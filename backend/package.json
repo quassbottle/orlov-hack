@@ -15,7 +15,7 @@
     "schema:generate:dev": "npx dotenv -- npx prisma generate --schema ./libs/db/prisma/schema.prisma",
     "migrate:dev": "npx dotenv -e api.env.development -- npx prisma migrate dev --schema ./libs/db/prisma/schema.prisma",
     "studio:dev": "npx dotenv -e api.env.development -- npx prisma studio --schema ./libs/db/prisma/schema.prisma",
-    "schema:generate:prod": "npx prisma generate --no-engine --schema ./libs/db/prisma/schema.prisma",
+    "schema:generate:prod": "npx prisma generate --schema ./libs/db/prisma/schema.prisma",
     "migrate:prod": "npx prisma migrate deploy --schema ./libs/db/prisma/schema.prisma",
     "test": "jest",
     "test:watch": "jest --watch",
