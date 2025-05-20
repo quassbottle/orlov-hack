@@ -7,7 +7,7 @@ on:
   push:
     branches: [mobile]
     paths:
-      - "frontend/**"
+      - "mobile/**"
 
 env:
   APP_NAME: Inspector
