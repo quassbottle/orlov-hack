@@ -19,6 +19,6 @@ RUN mkdir -p /home/node/app
 WORKDIR /home/node/app
 COPY --chown=node --from=build /home/node/app .
 
-RUN pnpm run migrate:prod
+# RUN pnpm run migrate:prod
 
 CMD ["pnpm", "run", "start:prod"]
