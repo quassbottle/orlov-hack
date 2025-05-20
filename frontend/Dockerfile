@@ -18,6 +18,4 @@ RUN mkdir -p /home/node/app
 WORKDIR /home/node/app
 COPY --chown=node --from=build /home/node/app .
 
-EXPOSE 3000
-
-CMD ["serve", "-s", "build", "-l", "3000"]
+CMD ["pnpm", "run", "start"]
