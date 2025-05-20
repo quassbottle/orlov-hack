@@ -13,12 +13,11 @@ RUN pnpm run build
 
 FROM node:20-alpine
 RUN npm install -g pnpm
+RUN npm install -g serve
 USER node
 RUN mkdir -p /home/node/app
 WORKDIR /home/node/app
 COPY --chown=node --from=build /home/node/app .
-
-RUN pnpm install -g serve
 
 EXPOSE 3000
 
