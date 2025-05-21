@@ -10,6 +10,7 @@ FROM dependencies AS build
 WORKDIR /home/node/app
 
 RUN pnpm run build
+RUN npx prisma generate
 
 FROM node:20-alpine
 RUN npm install -g pnpm
