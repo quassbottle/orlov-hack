@@ -38,7 +38,7 @@ jobs:
 
       - name: Build Docker Image with unique tag
         run: |
-          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} .
+          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} . -f Dockerfile.api
 
       - name: Stop and remove containers using old images of the same container (excluding current)
         run: |

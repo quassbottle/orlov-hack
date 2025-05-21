@@ -1,4 +1,4 @@
-name: Docker Build & Deploy Backend
+name: Docker Build & Deploy Telegram Bot
 
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
 
       - name: Build Docker Image with unique tag
         run: |
-          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} ./Dockerfile.telegram-bot
+          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} . -f ./Dockerfile.telegram-bot
 
       - name: Stop and remove containers using old images of the same container (excluding current)
         run: |
