@@ -21,4 +21,4 @@ COPY --chown=node --from=build /home/node/app .
 
 # RUN pnpm run migrate:prod
 
-CMD ["pnpm", "run", "start:scraper:prod"]
+CMD ["pnpm", "run", "start:telegram-bot:prod"]
