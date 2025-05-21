@@ -1,24 +1,28 @@
-name: Docker Build & Deploy Frontend
+name: Docker Build & Deploy Scraper
 
 on:
   push:
     branches: [master]
     paths:
-      - "frontend/**"
+      - "backend/**"
 
 env:
-  CONTAINER_NAME: frontend
-  CONTAINER_PORT: 3000
+  CONTAINER_NAME: scraper
+  CONTAINER_PORT: 3102
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  KAFKA_ENDPOINT: ${{ secrets.KAFKA_ENDPOINT }}
+  TELEGRAM_API_TOKEN: ${{ secrets.TELEGRAM_API_TOKEN }}
+  TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+  TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
 
 jobs:
   deploy:
     runs-on: self-hosted
     defaults:
       run:
-        working-directory: ./frontend
+        working-directory: ./backend
 
     steps:
       - name: Checkout code
@@ -29,19 +33,22 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          
+
       - name: Get short SHA
         id: vars
         run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Build Docker Image with unique tag
         run: |
-          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} .
+          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} . -f ./Dockerfile.scraper
 
-      - name: Stop and remove containers using old images of the same container (excluding current)
+      - name: Stop and remove containers using old images of the same container (including current name)
         run: |
-          # Get containers using $CONTAINER_NAME images excluding current SHA
-          docker ps -a --filter "name=$CONTAINER_NAME-*" --format '{{.ID}} {{.Image}}' | while read container_id image_ref; do
+          # Remove any existing container with the current name first
+          docker ps -a --filter "name=$CONTAINER_NAME-${{ env.SHORT_SHA }}" -q | xargs -r docker rm -f
+
+          # Then remove other containers with the same name pattern
+           docker ps -a --filter "name=$CONTAINER_NAME-*" --format '{{.ID}} {{.Image}}' | while read container_id image_ref; do
             image_tag=$(echo "$image_ref" | cut -d':' -f2)
             if [ "$image_tag" != "${{ env.SHORT_SHA }}" ]; then
               echo "Stopping and removing container $container_id using old image $image_ref"
@@ -52,7 +59,7 @@ jobs:
 
       - name: Run new container
         run: |
-          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e DATABASE_URL=$DATABASE_URL -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
+          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e TELEGRAM_API_TOKEN=$TELEGRAM_API_TOKEN -e TELEGRAM_API_HASH=$TELEGRAM_API_HASH -e TELEGRAM_API_ID=$TELEGRAM_API_ID -e KAFKA_ENDPOINT=$KAFKA_ENDPOINT -e DATABASE_URL=$DATABASE_URL -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
 
       - name: Remove old images of the same container (keep current)
         run: |

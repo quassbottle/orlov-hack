@@ -38,7 +38,7 @@ jobs:
 
       - name: Build Docker Image with unique tag
         run: |
-          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} .
+          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} . -f Dockerfile.api
 
       - name: Stop and remove containers using old images of the same container (excluding current)
         run: |
@@ -54,7 +54,7 @@ jobs:
 
       - name: Run new container
         run: |
-          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e JWT_SECRET=$JWT_SECRET -e JWT_EXPIRES_IN=$JWT_EXPIRES_IN -e DATABASE_URL=$DATABASE_URL -e ENV=prod -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
+          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e JWT_SECRET=$JWT_SECRET -e JWT_EXPIRES_IN=$JWT_EXPIRES_IN -e DATABASE_URL=$DATABASE_URL -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
 
       - name: Remove old images of the same container (keep current)
         run: |

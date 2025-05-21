@@ -11,10 +11,13 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@clickhouse/client": "^1.11.1",
     "@prisma/client": "6.8.2",
     "@remix-run/node": "^2.16.7",
     "@remix-run/react": "^2.16.7",
     "@remix-run/serve": "^2.16.7",
+    "@types/bcrypt": "^5.0.2",
+    "bcrypt": "^6.0.0",
     "isbot": "^4.1.0",
     "prisma": "^6.8.2",
     "react": "^18.2.0",

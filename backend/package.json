@@ -11,6 +11,10 @@
     "start": "nest start",
     "start:dev": "npx dotenv -- NODE_ENV=development APP=api nest start --watch",
     "start:prod": "node dist/apps/api/main",
+    "start:scraper:dev": "npx dotenv -- NODE_ENV=development APP=scraper nest start scraper --watch",
+    "start:scraper:prod": "node dist/apps/scraper/main",
+    "start:telegram-bot:dev": "npx dotenv -- NODE_ENV=development APP=telegram-bot nest start telegram-bot --watch",
+    "start:telegram-bot:prod": "node dist/apps/telegram-bot/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "schema:generate:dev": "npx dotenv -- npx prisma generate --schema ./libs/db/prisma/schema.prisma",
     "migrate:dev": "npx dotenv -e api.env.development -- npx prisma migrate dev --schema ./libs/db/prisma/schema.prisma",
@@ -24,10 +28,12 @@
     "test:e2e": "jest --config ./apps/api/test/jest-e2e.json"
   },
   "dependencies": {
+    "@clickhouse/client": "^1.11.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.0",
+    "@nestjs/microservices": "^11.1.1",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.0",
@@ -36,10 +42,13 @@
     "class-validator": "^0.14.2",
     "dotenv": "^16.5.0",
     "dotenv-cli": "^8.0.0",
+    "kafkajs": "^2.2.4",
+    "nestjs-telegraf": "^2.9.1",
     "passport-jwt": "^4.0.1",
     "prisma": "^6.8.2",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "telegraf": "^4.16.3",
     "telegram": "^2.26.22"
   },
   "devDependencies": {
@@ -90,6 +99,7 @@
       "<rootDir>/apps/"
     ],
     "moduleNameMapper": {
+      "^@app/clickhouse(|/.*)$": "<rootDir>/libs/clickhouse/src/$1",
       "^@app/core(|/.*)$": "<rootDir>/libs/core/src/$1",
       "^@app/db(|/.*)$": "<rootDir>/libs/db/src/$1"
     }

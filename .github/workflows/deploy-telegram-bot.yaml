@@ -1,24 +1,26 @@
-name: Docker Build & Deploy Frontend
+name: Docker Build & Deploy Telegram Bot
 
 on:
   push:
     branches: [master]
     paths:
-      - "frontend/**"
+      - "backend/**"
 
 env:
-  CONTAINER_NAME: frontend
-  CONTAINER_PORT: 3000
+  CONTAINER_NAME: telegram-bot
+  CONTAINER_PORT: 3101
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  CLICKHOUSE_URL: ${{ secrets.CLICKHOUSE_URL }}
+  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
 jobs:
   deploy:
     runs-on: self-hosted
     defaults:
       run:
-        working-directory: ./frontend
+        working-directory: ./backend
 
     steps:
       - name: Checkout code
@@ -29,14 +31,14 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          
+
       - name: Get short SHA
         id: vars
         run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Build Docker Image with unique tag
         run: |
-          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} .
+          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} . -f ./Dockerfile.telegram-bot
 
       - name: Stop and remove containers using old images of the same container (excluding current)
         run: |
@@ -52,7 +54,7 @@ jobs:
 
       - name: Run new container
         run: |
-          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e DATABASE_URL=$DATABASE_URL -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
+          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN -e CLICKHOUSE_URL=$CLICKHOUSE_URL -e DATABASE_URL=$DATABASE_URL -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
 
       - name: Remove old images of the same container (keep current)
         run: |
