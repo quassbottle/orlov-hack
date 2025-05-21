@@ -1,4 +1,4 @@
-name: Docker Build & Deploy Backend
+name: Docker Build & Deploy Scraper
 
 on:
   push:
