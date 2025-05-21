@@ -7,13 +7,14 @@ on:
       - "backend/**"
 
 env:
-  CONTAINER_NAME: backend
-  CONTAINER_PORT: 3001
+  CONTAINER_NAME: scraper
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  JWT_SECRET: ${{ secrets.JWT_SECRET }}
-  JWT_EXPIRES_IN: ${{ secrets.JWT_SECRET_IN }}
+  KAFKA_ENDPOINT: ${{ secrets.KAFKA_ENDPOINT }}
+  TELEGRAM_API_TOKEN: ${{ secrets.TELEGRAM_API_TOKEN }}
+  TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+  TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
 
 jobs:
   deploy:
@@ -38,7 +39,7 @@ jobs:
 
       - name: Build Docker Image with unique tag
         run: |
-          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} .
+          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} ./Dockerfile.scraper
 
       - name: Stop and remove containers using old images of the same container (excluding current)
         run: |
@@ -54,7 +55,7 @@ jobs:
 
       - name: Run new container
         run: |
-          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e JWT_SECRET=$JWT_SECRET -e JWT_EXPIRES_IN=$JWT_EXPIRES_IN -e DATABASE_URL=$DATABASE_URL -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
+          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e TELEGRAM_API_TOKEN=$TELEGRAM_API_TOKEN -e TELEGRAM_API_HASH=$TELEGRAM_API_HASH -e TELEGRAM_API_ID=$TELEGRAM_API_ID -e KAFKA_ENDPOINT=$KAFKA_ENDPOINT -e DATABASE_URL=$DATABASE_URL -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
 
       - name: Remove old images of the same container (keep current)
         run: |
