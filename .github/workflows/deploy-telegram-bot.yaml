@@ -8,6 +8,7 @@ on:
 
 env:
   CONTAINER_NAME: telegram-bot
+  CONTAINER_PORT: 3101
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
