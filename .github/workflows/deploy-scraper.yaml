@@ -42,10 +42,13 @@ jobs:
         run: |
           docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} . -f ./Dockerfile.scraper
 
-      - name: Stop and remove containers using old images of the same container (excluding current)
+      - name: Stop and remove containers using old images of the same container (including current name)
         run: |
-          # Get containers using $CONTAINER_NAME images excluding current SHA
-          docker ps -a --filter "name=$CONTAINER_NAME-*" --format '{{.ID}} {{.Image}}' | while read container_id image_ref; do
+          # Remove any existing container with the current name first
+          docker ps -a --filter "name=$CONTAINER_NAME-${{ env.SHORT_SHA }}" -q | xargs -r docker rm -f
+
+          # Then remove other containers with the same name pattern
+           docker ps -a --filter "name=$CONTAINER_NAME-*" --format '{{.ID}} {{.Image}}' | while read container_id image_ref; do
             image_tag=$(echo "$image_ref" | cut -d':' -f2)
             if [ "$image_tag" != "${{ env.SHORT_SHA }}" ]; then
               echo "Stopping and removing container $container_id using old image $image_ref"
