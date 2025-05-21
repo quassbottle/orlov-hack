@@ -9,15 +9,7 @@ datasource db {
 }
 
 model TelegramChannel {
-  id String @id
-
-  title String
-  url   String
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  lastMessageId String @map("last_message_id")
+  tag String @id
 
   @@map("telegram_channel")
 }

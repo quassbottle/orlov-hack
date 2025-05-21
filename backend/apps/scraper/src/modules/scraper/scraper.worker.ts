@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { ClientKafka } from '@nestjs/microservices';
 import { TelegramService } from '../telegram/telegram.service';
 import { Api } from 'telegram';
@@ -10,7 +11,6 @@ import { randomUUID } from 'node:crypto';
 @Injectable()
 export class ScraperWorker implements OnModuleInit {
     private readonly logger = new Logger(ScraperWorker.name);
-
     private readonly MESSAGE_BATCH_SIZE = 100;
     private readonly REQUEST_DELAY_MS = 1500;
 
@@ -22,7 +22,20 @@ export class ScraperWorker implements OnModuleInit {
     ) {}
 
     async onModuleInit() {
-        await this.scrapChannel({ url: 'flappy_duck_chat' });
+        this.logger.log('Initial scrape on startup');
+        await this.scrapAllChannels();
+    }
+
+    @Cron('0 */5 * * * *') // Каждые 5 минут
+    async scrapAllChannels() {
+        const channels = await this.prisma.telegramChannel.findMany();
+        this.logger.log(`Scheduled scrape of ${channels.length} channels`);
+
+        for (const channel of channels) {
+            await this.scrapChannel({ url: channel.tag });
+        }
+
+        this.logger.log('Scheduled scrape complete');
     }
 
     private async getLastRunInfo(channelUrl: string): Promise<{
@@ -66,6 +79,8 @@ export class ScraperWorker implements OnModuleInit {
 
     private async processMessage(message: Api.Message, channelUrl: string) {
         try {
+            if (!message.message || message.message.length === 0) return;
+
             this.logger.debug(
                 `[${channelUrl}] Message ${new Date(message.date * 1000).toISOString()} ${message.id}: ${message.message?.substring(0, 50)}...`,
             );
@@ -103,7 +118,6 @@ export class ScraperWorker implements OnModuleInit {
 
             const tag = url;
             const tgId = entity.id;
-
             const {
                 date: fromDate,
                 lastMessageId: lastKnownId,
@@ -117,7 +131,7 @@ export class ScraperWorker implements OnModuleInit {
                     where: { id: unfinishedScrape.id },
                 });
                 this.logger.log(
-                    `Resuming unfinished scrape ${scrape.id} from ${fromDate} (last ID: ${lastKnownId ?? 'none'})`,
+                    `Resuming scrape ${scrape.id} from ${fromDate} (last ID: ${lastKnownId ?? 'none'})`,
                 );
             } else {
                 scrape = await this.prisma.channelScrape.create({
@@ -151,25 +165,22 @@ export class ScraperWorker implements OnModuleInit {
                     }
 
                     for (const message of messages) {
-                        const messageDate = DateTime.fromSeconds(message.date);
-                        const fromDateTime = DateTime.fromJSDate(fromDate);
-
                         if (lastKnownId && message.id <= lastKnownId) {
                             continue;
                         }
 
                         await this.processMessage(message, url);
 
+                        totalMessagesProcessed++;
+                        lastProcessedId = Math.max(lastProcessedId, message.id);
+
                         await this.prisma.channelScrape.update({
                             where: { id: scrape.id },
                             data: {
-                                messageCount: totalMessagesProcessed + 1,
+                                messageCount: totalMessagesProcessed,
                                 lastMessageId: message.id.toString(),
                             },
                         });
-
-                        lastProcessedId = Math.max(lastProcessedId, message.id);
-                        totalMessagesProcessed++;
                     }
 
                     currentOffsetId = messages[messages.length - 1].id;
@@ -211,15 +222,5 @@ export class ScraperWorker implements OnModuleInit {
                 this.logger.debug(error.stack);
             }
         }
-    }
-
-    async scrapChannels(channelUrls: string[]) {
-        this.logger.log(`Starting scraping for ${channelUrls.length} channels`);
-
-        for (const url of channelUrls) {
-            await this.scrapChannel({ url });
-        }
-
-        this.logger.log('Finished scraping all channels');
     }
 }
