@@ -73,7 +73,7 @@ export class ScraperWorker implements OnModuleInit {
         }
 
         return {
-            date: DateTime.now().minus({ months: 6 }).toJSDate(),
+            date: DateTime.now().minus({ days: 7 }).toJSDate(),
         };
     }
 
@@ -98,6 +98,53 @@ export class ScraperWorker implements OnModuleInit {
                 `Error processing message ${message.id}: ${error.message}`,
             );
         }
+    }
+
+    private async findMessageIdByDate(
+        entity: Api.Chat | Api.Channel,
+        targetDate: Date,
+    ): Promise<number | null> {
+        const client = this.telegramService.instance;
+        const targetTimestamp = Math.floor(targetDate.getTime() / 1000);
+
+        let offsetId = 0;
+        let lastFoundId: number | null = null;
+
+        while (true) {
+            const messages = await client.getMessages(entity, {
+                limit: 500,
+                offsetId,
+            });
+
+            if (messages.length === 0) {
+                break;
+            }
+
+            for (const message of messages) {
+                if (!message.date) continue;
+
+                const messageTime = message.date;
+
+                console.log({
+                    timestamp: messageTime,
+                    date: new Date(messageTime * 1000),
+                });
+
+                if (messageTime >= targetTimestamp) {
+                    lastFoundId = message.id;
+                } else {
+                    return lastFoundId;
+                }
+            }
+
+            offsetId = messages[messages.length - 1].id;
+
+            await new Promise((resolve) =>
+                setTimeout(resolve, this.REQUEST_DELAY_MS),
+            );
+        }
+
+        return lastFoundId;
     }
 
     async scrapChannel(params: { url: string }) {
@@ -148,8 +195,24 @@ export class ScraperWorker implements OnModuleInit {
 
             let hasMoreMessages = true;
             let totalMessagesProcessed = scrape.messageCount || 0;
+
             let lastProcessedId = lastKnownId || 0;
             let currentOffsetId = lastKnownId || 0;
+
+            if (!lastKnownId) {
+                const approximateStartId = await this.findMessageIdByDate(
+                    entity,
+                    fromDate,
+                );
+                if (approximateStartId) {
+                    currentOffsetId = approximateStartId;
+                    lastProcessedId = approximateStartId;
+                } else {
+                    this.logger.warn(
+                        `Could not find message near ${fromDate.toISOString()}, scraping from beginning.`,
+                    );
+                }
+            }
 
             while (hasMoreMessages) {
                 try {
