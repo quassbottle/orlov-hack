@@ -7,13 +7,12 @@ on:
       - "backend/**"
 
 env:
-  CONTAINER_NAME: backend
-  CONTAINER_PORT: 3001
+  CONTAINER_NAME: telegram-bot
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  JWT_SECRET: ${{ secrets.JWT_SECRET }}
-  JWT_EXPIRES_IN: ${{ secrets.JWT_SECRET_IN }}
+  CLICKHOUSE_URL: ${{ secrets.CLICKHOUSE_URL }}
+  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
 jobs:
   deploy:
@@ -38,7 +37,7 @@ jobs:
 
       - name: Build Docker Image with unique tag
         run: |
-          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} .
+          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} ./Dockerfile.telegram-bot
 
       - name: Stop and remove containers using old images of the same container (excluding current)
         run: |
@@ -54,7 +53,7 @@ jobs:
 
       - name: Run new container
         run: |
-          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e JWT_SECRET=$JWT_SECRET -e JWT_EXPIRES_IN=$JWT_EXPIRES_IN -e DATABASE_URL=$DATABASE_URL -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
+          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN -e CLICKHOUSE_URL=$CLICKHOUSE_URL -e DATABASE_URL=$DATABASE_URL -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
 
       - name: Remove old images of the same container (keep current)
         run: |
