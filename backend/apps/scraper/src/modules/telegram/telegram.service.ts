@@ -29,7 +29,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
         );
     }
 
-    public instance() {
+    public get instance() {
         return this.client;
     }
 
@@ -39,16 +39,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
     async onModuleInit() {
         await this.client.connect();
-
         const me = await this.client.getMe();
-
         this.logger.log(`Logged in as ${me.firstName} (${me.id})`);
-
-        const result = await this.client.getEntity('https://t.me/Flappy_Duck');
-        if (result instanceof Api.Channel || result instanceof Api.Chat) {
-            this.logger.log(
-                await this.client.getMessages(result, { limit: 10 }),
-            );
-        }
     }
 }
