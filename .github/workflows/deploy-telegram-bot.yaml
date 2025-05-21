@@ -4,7 +4,7 @@ on:
   push:
     branches: [master]
     paths:
-      - "backend/**"
+      - "backend/apps/telegram-bot/**"
 
 env:
   CONTAINER_NAME: telegram-bot

@@ -24,6 +24,7 @@ import { PrismaModule } from '@app/db';
                                 brokers: [
                                     config.get<string>('KAFKA_ENDPOINT')!,
                                 ],
+                                connectionTimeout: 100000,
                             },
                             producerOnlyMode: true,
                         },
