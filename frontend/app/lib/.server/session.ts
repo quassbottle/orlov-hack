@@ -1,4 +1,4 @@
-import { createCookieSessionStorage } from "@remix-run/node";
+import { createCookieSessionStorage, redirect } from "@remix-run/node";
 
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) {
@@ -17,15 +17,32 @@ const storage = createCookieSessionStorage({
   },
 });
 
-function getUserSession(request: Request) {
+export async function createUserSession(userId: string, redirectTo: string) {
+  const session = await storage.getSession();
+  session.set("userId", userId);
+
+  return redirect(redirectTo, {
+    headers: {
+      "Set-Cookie": await storage.commitSession(session),
+    },
+  });
+}
+
+export async function getUserSession(request: Request) {
   return storage.getSession(request.headers.get("Cookie"));
 }
 
 export async function getUserId(request: Request) {
   const session = await getUserSession(request);
   const userId = session.get("userId");
-  if (!userId || typeof userId !== "string") {
-    return null;
-  }
-  return userId;
+  return typeof userId === "string" ? userId : null;
+}
+
+export async function logout(request: Request) {
+  const session = await getUserSession(request);
+  return redirect("/login", {
+    headers: {
+      "Set-Cookie": await storage.destroySession(session),
+    },
+  });
 }
