@@ -21,9 +21,7 @@ import { PrismaModule } from '@app/db';
                         options: {
                             client: {
                                 clientId: 'scraper',
-                                brokers: [
-                                    config.get<string>('KAFKA_ENDPOINT')!,
-                                ],
+                                brokers: ['kafka:29092'],
                                 connectionTimeout: 100000,
                             },
                             producerOnlyMode: true,
