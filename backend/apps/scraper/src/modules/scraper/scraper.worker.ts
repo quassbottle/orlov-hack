@@ -12,7 +12,7 @@ import { randomUUID } from 'node:crypto';
 export class ScraperWorker implements OnModuleInit {
     private readonly logger = new Logger(ScraperWorker.name);
     private readonly MESSAGE_BATCH_SIZE = 100;
-    private readonly REQUEST_DELAY_MS = 1500;
+    private readonly REQUEST_DELAY_MS = 30000;
 
     constructor(
         @Inject('SCRAPER_PRODUCER')
