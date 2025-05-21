@@ -1,49 +1,26 @@
 import { LoaderFunction, json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-
-interface TableRow {
-  time: string;
-  address: string;
-  complaint: string;
-  source: string;
-}
+import { clickhouse } from "~/lib/.server/clickhouse";
 
 export const loader: LoaderFunction = async () => {
-  const data: TableRow[] = [
-    {
-      time: "2024-07-11 15:55:14",
-      address: "ул. Ленина, 12",
-      complaint: "Нет горячей воды",
-      source: "Житель дома"
-    },
-    {
-      time: "2024-07-11 15:54:10",
-      address: "пр. Победы, 45",
-      complaint: "Сильный запах газа",
-      source: "Диспетчер"
-    },
-    {
-      time: "2024-07-11 15:53:30",
-      address: "ул. Гагарина, 7",
-      complaint: "Отсутствие освещения",
-      source: "Портал ЖКХ"
-    },
-    {
-      time: "2024-07-11 15:51:20",
-      address: "ул. Кирова, 20",
-      complaint: "Протекает крыша",
-      source: "Житель дома"
-    },
-    {
-      time: "2024-07-11 15:51:20",
-      address: "ул. Кирова, 20",
-      complaint: "Протекает крыша",
-      source: "Житель дома"
-    }
-  ];
+  const data = await clickhouse.getTableInfo();
 
-  return json(data);
+  const result = data.map((row): TableRow => ({
+    source: row.source,
+    message: row.message,
+    created_at: new Date(row.created_at).toLocaleString("ru-RU"),
+    address: row.address
+  }));
+
+  return json(result);
 };
+
+interface TableRow {
+  created_at: string;
+  address: string;
+  message: string;
+  source: string;
+}
 
 export default function Index() {
   const data = useLoaderData<typeof loader>() as TableRow[];
@@ -61,11 +38,11 @@ export default function Index() {
           </tr>
         </thead>
         <tbody>
-          {data.map((row: TableRow, index: number) => (
+          {data.map((row, index) => (
             <tr key={index} className="hover:bg-gray-800">
-              <td className="border border-gray-700 px-4 py-2">{row.time}</td>
+              <td className="border border-gray-700 px-4 py-2">{row.created_at}</td>
               <td className="border border-gray-700 px-4 py-2">{row.address}</td>
-              <td className="border border-gray-700 px-4 py-2">{row.complaint}</td>
+              <td className="border border-gray-700 px-4 py-2">{row.message}</td>
               <td className="border border-gray-700 px-4 py-2">{row.source}</td>
             </tr>
           ))}
