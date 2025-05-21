@@ -17,6 +17,15 @@
         "tsConfigPath": "apps/api/tsconfig.app.json"
       }
     },
+    "clickhouse": {
+      "type": "library",
+      "root": "libs/clickhouse",
+      "entryFile": "index",
+      "sourceRoot": "libs/clickhouse/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/clickhouse/tsconfig.lib.json"
+      }
+    },
     "core": {
       "type": "library",
       "root": "libs/core",
@@ -42,6 +51,15 @@
       "sourceRoot": "apps/scraper/src",
       "compilerOptions": {
         "tsConfigPath": "apps/scraper/tsconfig.app.json"
+      }
+    },
+    "telegram-bot": {
+      "type": "application",
+      "root": "apps/telegram-bot",
+      "entryFile": "main",
+      "sourceRoot": "apps/telegram-bot/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/telegram-bot/tsconfig.app.json"
       }
     }
   },

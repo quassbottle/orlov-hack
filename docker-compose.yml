@@ -1,17 +1,83 @@
 name: backend
 
 services:
-    database:
-        image: postgres:16
-        restart: unless-stopped
-        environment:
-            POSTGRES_USER: 'admin'
-            POSTGRES_PASSWORD: 'password'
-            POSTGRES_DB: 'inspector'
-        ports:
-            - '5564:5432'
-        volumes:
-            - database-pg:/var/lib/postgresql/data
+  clickhouse:
+    user: "0:0"
+    image: "clickhouse/clickhouse-server:24.5.1"
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse/
+      - clickhouse_logs:/var/log/clickhouse-server/
+    deploy:
+      resources:
+        limits:
+          cpus: "2.50"
+          memory: 5000M
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+  database:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "inspector"
+    ports:
+      - "5564:5432"
+    volumes:
+      - database-pg:/var/lib/postgresql/data
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:2181"
+    networks:
+      - backend
+
+  kafka:
+    image: confluentinc/cp-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    restart: always
+    networks:
+      - backend
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    ports:
+      - "8090:8070"
+    restart: always
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+      - SERVER.PORT=8070
+    networks:
+      - backend
 
 volumes:
-    database-pg:
+  database-pg:
+  clickhouse_data:
+  clickhouse_logs:
+
+networks:
+  backend:
+    driver: bridge
