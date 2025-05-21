@@ -10,7 +10,7 @@ FROM dependencies AS build
 WORKDIR /home/node/app
 
 RUN pnpm run schema:generate:prod
-RUN pnpm run build
+RUN pnpm run build scraper
 
 FROM node:20-alpine
 RUN npm install -g pnpm
