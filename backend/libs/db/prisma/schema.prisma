@@ -12,9 +12,28 @@ model TelegramChannel {
   id String @id
 
   title String
+  url   String
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  lastMessageId String @map("last_message_id")
+
   @@map("telegram_channel")
+}
+
+model ChannelScrape {
+  id String @id
+
+  tag          String
+  tgId         String    @map("tg_id")
+  messageCount Int?      @map("message_count")
+  createdAt    DateTime  @default(now()) @map("scraped_at")
+  endedAt      DateTime? @map("ended_at")
+
+  lastMessageId String? @map("last_message_id")
+
+  @@index([tag])
+  @@index([createdAt])
+  @@map("telegram_channel_scrape")
 }
