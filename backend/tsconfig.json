@@ -18,6 +18,12 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
+      "@app/clickhouse": [
+        "libs/clickhouse/src"
+      ],
+      "@app/clickhouse/*": [
+        "libs/clickhouse/src/*"
+      ],
       "@app/core": [
         "libs/core/src"
       ],
