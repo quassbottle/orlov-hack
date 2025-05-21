@@ -22,19 +22,19 @@ export default function Login() {
     <div className="w-full flex justify-center items-center h-[100dvh] bg-gray-900 ">
       <div className="w-[40%] h-[40%] flex justify-center items-center bg-gray-700 rounded-md">
         <Form
-          className="rounded-md p-4 flex flex-col justify-center items-center gap-3 bg-gray-800 w-[99%] h-[99%]"
+          className="rounded-md p-4 flex flex-col justify-center items-center gap-4 bg-gray-800 w-[99%] h-[99%]"
           method="post"
         >
-          <h1 className="text-lg">Авторизация</h1>
+          <h1 className="text-lg mb-4">Войти</h1>
           <input
-            className="pl-2 h-[15%] w-3/4 bg-gray-700"
+            className="pl-2 h-[15%] w-5/6 bg-gray-700 rounded-md"
             name="username"
             type="text"
             placeholder="Логин"
             required
           />
           <input
-            className="pl-2 h-[15%] w-3/4 bg-gray-700"
+            className="pl-2 h-[15%] w-5/6 bg-gray-700 rounded-md"
             name="password"
             type="password"
             placeholder="Пароль"
@@ -42,7 +42,7 @@ export default function Login() {
           />
           {data?.error && <p style={{ color: "red" }}>{data.error}</p>}
           <button
-            className="h-[15%] w-[40%] mt-10 bg-gray-700 rounded-md hover:bg-gray-800 hover:border-[1px] hover:border-white"
+            className="h-[15%] w-5/6 mt-10 bg-gray-700 rounded-md hover:bg-gray-800 hover:border-[1px] hover:border-white"
             type="submit"
           >
             Войти
