@@ -13,6 +13,10 @@ class DeepSeekClient:
         self.__config = cfg
 
     def is_accident(self, text: str):
+        if len(text) <= 25:
+            print('message is a short': text)
+            return False
+        
         response = requests.post(
             self.__config.deep_seek_url, 
             headers=self.__get_base_headers(),
