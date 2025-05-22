@@ -8,10 +8,43 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-
+  id       Int    @id @default(autoincrement())
   username String @unique
   password String
 
   @@map("user")
+}
+
+enum StatusType {
+  PROGRESS
+  DONE
+  DECLINED
+
+  @@map("status_type")
+}
+
+model Status {
+  id Int @id @default(autoincrement())
+
+  messageId String     @unique @map("message_id")
+  status    StatusType @default(PROGRESS)
+
+  @@map("status")
+}
+
+model telegram_channel {
+  tag String @id
+}
+
+model telegram_channel_scrape {
+  id              String    @id
+  tag             String
+  tg_id           String
+  message_count   Int?
+  scraped_at      DateTime  @default(now())
+  last_message_id String?
+  ended_at        DateTime?
+
+  @@index([scraped_at])
+  @@index([tag])
 }
