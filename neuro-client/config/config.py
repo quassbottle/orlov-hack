@@ -11,7 +11,7 @@ def parse(src: str) -> Config:
 
     with open(src, 'r') as f:
         config_content = Template(f.read()).substitute(os.environ)
-        config_data = toml.load(config_content)
+        config_data = toml.loads(config_content)
     
     return Config(
         kafka_brokers=config_data['kafka']['brokers'],
