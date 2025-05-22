@@ -23,7 +23,7 @@ class DeepSeekClient:
             json=self.__get_deep_seek_payload(self.__get_deep_seek_is_accident_message(text))
         )
 
-        print(response, response.text)
+        print(response, response.text, f'{self.__config.deep_seek_url}/code')
 
         if response.status_code != 200:
             raise BadRequestException 
