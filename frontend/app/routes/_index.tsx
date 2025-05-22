@@ -1,6 +1,7 @@
 import { LoaderFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
+import SortDropdown from "~/lib/.client/components/dropdown";
 import { clickhouse } from "~/lib/.server/clickhouse";
 
 interface TableRow {
@@ -111,7 +112,12 @@ export default function Index() {
             ) : (
                 <></>
             )}
-            <h1 className="text-2xl font-bold mb-4">Жалобы</h1>
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-bold">Жалобы</h1>
+                <div className="z-20">
+                    <SortDropdown />
+                </div>
+            </div>
             <table className="table-auto w-full border-collapse border border-gray-700">
                 <thead className="bg-gray-800">
                     <tr>
