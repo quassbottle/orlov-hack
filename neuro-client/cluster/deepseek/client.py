@@ -14,7 +14,7 @@ class DeepSeekClient:
 
     def is_accident(self, text: str):
         if len(text) <= 25:
-            print('message is a short': text)
+            print('message is a short:', text)
             return False
         
         response = requests.post(
