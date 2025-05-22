@@ -34,42 +34,34 @@ export class ClickHouseService {
     }
 
     public async query<
-    TRow extends Record<string, unknown> = Record<string, unknown>,
-    TParams extends Record<string, unknown> | undefined = undefined
-  >(
-    query: string,
-    queryParams?: TParams
-  ): Promise<TRow[]> {
-    const timerLabel = `clickhouse-query [${query
-      .substring(0, 25)
-      .replace(/[\n\t\s]+/gi, " ")}][${randomUUID()}]`;
-  
-    console.time(timerLabel);
-    const res = await this.client.query({
-      query,
-      query_params: queryParams,
-    });
-  
-    const result: ResponseJSON<TRow> = await res.json();
-    console.timeEnd(timerLabel);
-  
-    return result.data;
-  }
-  
+        TRow extends Record<string, unknown> = Record<string, unknown>,
+        TParams extends Record<string, unknown> | undefined = undefined
+    >(query: string, queryParams?: TParams): Promise<TRow[]> {
+        const timerLabel = `clickhouse-query [${query
+            .substring(0, 25)
+            .replace(/[\n\t\s]+/gi, " ")}][${randomUUID()}]`;
 
+        console.time(timerLabel);
+        const res = await this.client.query({
+            query,
+            query_params: queryParams,
+        });
+
+        const result: ResponseJSON<TRow> = await res.json();
+        console.timeEnd(timerLabel);
+
+        return result.data;
+    }
 
     public async getTableInfo(): Promise<MessageRecord[]> {
         const query = `SELECT * FROM messages`;
         return await this.query<MessageRecord>(query);
-
     }
 
-    public async insert<TData extends InsertValues<Readable, unknown>>(
-        params: {
-            values: TData;
-            table: string;
-        }
-    ) {
+    public async insert<TData extends InsertValues<Readable, unknown>>(params: {
+        values: TData;
+        table: string;
+    }) {
         console.log("insert", params.values);
         await this.client.insert({
             table: params.table,
@@ -84,9 +76,10 @@ export class ClickHouseService {
     }
 }
 
-// Инициализация клиента и экспорт через singleton
 const clickhouseClient = new ClickHouseService({
     url: process.env.CLICKHOUSE_URL!,
+    username: "admin",
+    password: "password",
 });
 
 export const clickhouse = singleton("clickhouse", () => clickhouseClient);
