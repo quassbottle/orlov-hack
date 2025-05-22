@@ -72,7 +72,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const messageId = formData.get("messageId") as string;
-  const actionType = formData.get("actionType") as string;
+  const actionType = formData.get("actionType") as BadgeType;
 
   await status.upsert({ messageId, status: actionType });
 
@@ -130,24 +130,20 @@ export default function Index() {
               </button>
             </div>
             <div className="text-2xl pb-[30%] mx-4">Место для карты</div>
-            <div className="bg-gray-800 flex flex-col rounded-bl-md justify-between overflow-y-auto h-full overflow-x-hidden p-3">
+            <div className="bg-gray-800 flex flex-col rounded-bl-md justify-between overflow-y-auto h-full overflow-x-hidden p-8">
               <div className="flex flex-col gap-[20px]">
-                <div className="flex flex-row justify-between ">
-                  <div className="flex flex-row max-w-[85%] gap-2">
-                    <div className="pt-[5px]">
-                      {isImportant ? (
-                        <img alt="fire" className="w-6 h-6" src={Fire}></img>
-                      ) : (
-                        <></>
-                      )}
-                    </div>
-                    <div className="max-w-[78%] text-xl truncate">
+                <div className="flex flex-row items-center justify-between">
+                  <div className="flex flex-row items-center gap-2 flex-1">
+                    {isImportant && (
+                      <img alt="fire" className="w-6 h-6" src={Fire} />
+                    )}
+                    <div className="text-xl truncate max-w-[70%]">
                       {data[curInfo].message}
                     </div>
                   </div>
-                  <Badge type={data[curInfo].status}></Badge>
+                  <Badge type={data[curInfo].status} />
                 </div>
-                <div>{data[curInfo].longMessage}</div>
+                <div className="text-wrap">{data[curInfo].longMessage}</div>
               </div>
               <div className="justify-end flex flex-col gap-4">
                 <p className=" text-gray-400">
@@ -205,6 +201,9 @@ export default function Index() {
       <table className="table-auto w-full border-collapse border border-gray-700">
         <thead className="bg-gray-800">
           <tr>
+            <th className="border border-gray-700 px-4 py-2 text-center">
+              Статус
+            </th>
             <th className="border border-gray-700 px-4 py-2 text-left">
               Проблема
             </th>
@@ -221,6 +220,9 @@ export default function Index() {
                 setCurInfo(Number(("button_" + index).split("_")[1]));
               }}
             >
+              <td className="border border-gray-700 px-4 py-2">
+                <Badge className="w-[90px]" type={row.status}></Badge>
+              </td>
               <td className="border border-gray-700 px-4 py-2">
                 {row.message}
               </td>
