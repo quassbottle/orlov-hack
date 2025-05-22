@@ -4,10 +4,10 @@ import { useState } from "react";
 import { clickhouse } from "~/lib/.server/clickhouse";
 
 interface TableRow {
-    created_at?: string;
-    message?: string;
-    source?: string;
-    longMessage?: string;
+  created_at?: string;
+  message?: string;
+  source?: string;
+  longMessage?: string;
 }
 
 // Сортировка по улице и номеру
@@ -21,135 +21,149 @@ interface TableRow {
 // }
 
 export const loader: LoaderFunction = async ({ request }) => {
-    const url = new URL(request.url);
-    const dateStart = url.searchParams.get("start");
-    const dateEnd = url.searchParams.get("end");
-    const addressFilter = url.searchParams.get("address")?.toLowerCase().trim();
+  const url = new URL(request.url);
+  const dateStart = url.searchParams.get("start");
+  const dateEnd = url.searchParams.get("end");
+  const addressFilter = url.searchParams.get("address")?.toLowerCase().trim();
 
-    const raw = await clickhouse.getTableInfo();
+  const raw = await clickhouse.getTableInfo();
+  console.log(raw);
+  let filtered = raw;
 
-    let filtered = raw;
+  if (dateStart) {
+    const start = new Date(dateStart);
+    filtered = filtered.filter((row) => new Date(row.created_at) >= start);
+  }
+  if (dateEnd) {
+    const end = new Date(dateEnd);
+    filtered = filtered.filter((row) => new Date(row.created_at) <= end);
+  }
 
-    if (dateStart) {
-        const start = new Date(dateStart);
-        filtered = filtered.filter((row) => new Date(row.created_at) >= start);
-    }
-    if (dateEnd) {
-        const end = new Date(dateEnd);
-        filtered = filtered.filter((row) => new Date(row.created_at) <= end);
-    }
-
-    if (addressFilter) {
-        filtered = filtered.filter(
-            (row) =>
-                row.location &&
-                row.location.toLowerCase().includes(addressFilter)
-        );
-    }
-
-    const result = filtered.map(
-        (row): TableRow => ({
-            source: row.source,
-            message: row.problem!,
-            created_at: new Date(row.created_at).toLocaleString("ru-RU"),
-            longMessage: row.original_text!,
-        })
+  if (addressFilter) {
+    filtered = filtered.filter(
+      (row) =>
+        row.location && row.location.toLowerCase().includes(addressFilter)
     );
+  }
 
-    // filtered.sort((a, b) => {
-    //     const addrA = parseAddress(a.address);
-    //     const addrB = parseAddress(b.address);
-    //     const streetCompare = addrA.street.localeCompare(addrB.street, "ru");
-    //     return streetCompare !== 0
-    //         ? streetCompare
-    //         : addrA.number - addrB.number;
-    // });
+  const result = filtered.map(
+    (row): TableRow => ({
+      source: row.source,
+      message: row.problem!,
+      created_at: new Date(row.created_at).toLocaleString("ru-RU"),
+      longMessage: row.original_text!,
+    })
+  );
 
-    return result;
+  // filtered.sort((a, b) => {
+  //     const addrA = parseAddress(a.address);
+  //     const addrB = parseAddress(b.address);
+  //     const streetCompare = addrA.street.localeCompare(addrB.street, "ru");
+  //     return streetCompare !== 0
+  //         ? streetCompare
+  //         : addrA.number - addrB.number;
+  // });
+  return result;
 };
 
 export default function Index() {
-    const data = useLoaderData<TableRow[]>();
-    const [, setSearchParams] = useSearchParams();
+  const data = useLoaderData<TableRow[]>();
+  const [, setSearchParams] = useSearchParams();
 
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
-    const [address, setAddress] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [address, setAddress] = useState("");
 
-    const updateParams = (custom?: Record<string, string | null>) => {
-        const params = new URLSearchParams();
+  const updateParams = (custom?: Record<string, string | null>) => {
+    const params = new URLSearchParams();
 
-        if (startDate) params.set("start", startDate);
-        if (endDate) params.set("end", endDate);
-        if (address) params.set("address", address);
+    if (startDate) params.set("start", startDate);
+    if (endDate) params.set("end", endDate);
+    if (address) params.set("address", address);
 
-        if (custom) {
-            for (const key in custom) {
-                if (custom[key] === null) params.delete(key);
-                else params.set(key, custom[key] as string);
-            }
-        }
+    if (custom) {
+      for (const key in custom) {
+        if (custom[key] === null) params.delete(key);
+        else params.set(key, custom[key] as string);
+      }
+    }
 
-        setSearchParams(params);
-    };
+    setSearchParams(params);
+  };
 
-    const [isWindowOpened, setWindowOpen] = useState(false);
-    const [curInfo, setCurInfo] = useState(0);
+  const [isWindowOpened, setWindowOpen] = useState(false);
+  const [curInfo, setCurInfo] = useState(0);
 
-    return (
-        <div className="p-4 text-white bg-gray-900 min-h-screen">
-            {isWindowOpened ? (
-                <div className="fixed top-0 h-screen w-screen right-[1px] z-1 bg-black/50">
-                    <div>
-                        <div>
-                            <div>{data[curInfo].longMessage}</div>
-                            <div>Важный/нет</div>
-                        </div>
-                        <div>Статус</div>
-                    </div>
+  return (
+    <div className="p-4 text-white bg-gray-900 min-h-screen">
+      {isWindowOpened ? (
+        <div className="animate-slide fixed flex justify-end top-0 h-screen w-screen right-[1px] bg-black/75">
+          <div className="flex flex-col w-1/2 h-screen p-5 bg-gray-900">
+            <div className="flex flex-row justify-end">
+              <button
+                className="text-[30pt]"
+                onClick={() => {
+                  setWindowOpen(!isWindowOpened);
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div className="text-[72pt] pb-[300px]">Место для карты</div>
+            <div className="bg-gray-800 flex flex-col gap-[20px]">
+              <div className="flex flex-row gap-[40%]">
+                <div className="flex flex-row gap-4">
+                  <div className="max-w-[50%] truncate">
+                    {data[curInfo].message}
+                  </div>
+                  <div>Важный/нет</div>
                 </div>
-            ) : (
-                <></>
-            )}
-            <h1 className="text-2xl font-bold mb-4">Жалобы</h1>
-            <table className="table-auto w-full border-collapse border border-gray-700">
-                <thead className="bg-gray-800">
-                    <tr>
-                        <th className="border border-gray-700 px-4 py-2 text-left">
-                            Проблема
-                        </th>
-                        <th className="border border-gray-700 px-4 py-2 text-left"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {data.map((row, index) => (
-                        <tr key={index} className="hover:bg-gray-800">
-                            <td className="border border-gray-700 px-4 py-2">
-                                {row.message}
-                            </td>
-                            <td className="border border-gray-700 px-4 py-2">
-                                <button
-                                    id={"button_" + index}
-                                    className="text-[24pt] cursor-pointer border-none bg-none"
-                                    onClick={(event) => {
-                                        setWindowOpen(!isWindowOpened);
-                                        setCurInfo(
-                                            Number(
-                                                (
-                                                    event.target as HTMLButtonElement
-                                                ).id.split("_")[1]
-                                            )
-                                        );
-                                        console.log(data[curInfo]);
-                                    }}
-                                >
-                                    ···
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                <div>Статус</div>
+              </div>
+              <div>Дата: {data[curInfo].created_at}</div>
+              <div>{data[curInfo].longMessage}</div>
+            </div>
+          </div>
         </div>
-    );
+      ) : (
+        <></>
+      )}
+      <h1 className="text-2xl font-bold mb-4">Жалобы</h1>
+      <table className="table-auto w-full border-collapse border border-gray-700">
+        <thead className="bg-gray-800">
+          <tr>
+            <th className="border border-gray-700 px-4 py-2 text-left">
+              Проблема
+            </th>
+            <th className="border border-gray-700 px-4 py-2 text-left"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((row, index) => (
+            <tr key={index} className="hover:bg-gray-800">
+              <td className="border border-gray-700 px-4 py-2">
+                {row.message}
+              </td>
+              <td className="border border-gray-700 flex justify-center px-4 py-2">
+                <button
+                  id={"button_" + index}
+                  className="text-[24pt] cursor-pointer border-none bg-none"
+                  onClick={(event) => {
+                    setWindowOpen(!isWindowOpened);
+                    setCurInfo(
+                      Number(
+                        (event.target as HTMLButtonElement).id.split("_")[1]
+                      )
+                    );
+                  }}
+                >
+                  ···
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
