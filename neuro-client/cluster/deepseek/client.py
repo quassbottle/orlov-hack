@@ -23,13 +23,13 @@ class DeepSeekClient:
             json=self.__get_deep_seek_payload(self.__get_deep_seek_is_accident_message(text))
         )
 
+
         print(response, response.text, f'{self.__config.deep_seek_url}/code')
 
         if response.status_code != 200:
             raise BadRequestException 
 
         percent = response.json()['response']
-        # percent = response.json()['choices'][0]['message']['content']
         true_percent = re.sub(r"[^\d]", "", percent)
 
         print(f'[{true_percent}]: {text}')
@@ -48,7 +48,6 @@ class DeepSeekClient:
         if response.status_code != 200:
             raise BadRequestException 
 
-        # content = response.json()['choices'][0]['message']['content']
         content = response.json()['response']
         print(content)
 
