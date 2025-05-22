@@ -51,6 +51,7 @@ class DeepSeekClient:
         content = response.json()['response']
         content = content.replace('```json', '').replace('```', '')
 
+
         return AccidentInfo(**json.loads(content))
 
     def __get_base_headers(self):
