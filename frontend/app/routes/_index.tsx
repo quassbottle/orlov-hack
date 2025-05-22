@@ -3,7 +3,7 @@ import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
 import { clickhouse } from "~/lib/.server/clickhouse";
 import Fire from "public/fire.svg";
-import { Badge, BadgeType } from "~/lib/.client/components/Badges";
+import { Badge, BadgeType } from "~/components/Badges";
 import { status } from "~/lib/.server/api/status";
 import { toast } from "react-toastify";
 
