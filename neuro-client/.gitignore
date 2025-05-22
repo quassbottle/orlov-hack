@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.python-version
+
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store  # Для macOS
+
+myenv/
+venv/
+env/
+.venv/
+
+*.log
+*.tmp
+*.bak
+
+build/
+dist/
+*.egg-info/
