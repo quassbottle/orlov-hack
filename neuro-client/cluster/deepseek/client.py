@@ -23,6 +23,8 @@ class DeepSeekClient:
             json=self.__get_deep_seek_payload(self.__get_deep_seek_is_accident_message(text))
         )
 
+        print(response, response.text, f'{self.__config.deep_seek_url}/code')
+
         if response.status_code != 200:
             raise BadRequestException 
 
@@ -41,7 +43,8 @@ class DeepSeekClient:
             json=self.__get_deep_seek_payload(self.__get_deep_seek_accident_info(text))
         )
 
-
+        print(response, response.text)
+        
         if response.status_code != 200:
             raise BadRequestException 
 
@@ -63,14 +66,6 @@ class DeepSeekClient:
         return {
            "prompt": message 
         }
-        # return {
-        #     "messages": [{
-        #         "role": "user",
-        #         "content": message
-        #     }],
-        #     "model": "deepseek/deepseek-v3-turbo",
-        #     "stream": False
-        # }
     
     def __get_deep_seek_is_accident_message(self, original_message: str) -> str:
         return f'''
