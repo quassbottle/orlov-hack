@@ -3,9 +3,9 @@ import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
 import { clickhouse } from "~/lib/.server/clickhouse";
 import Fire from "public/fire.svg";
+import { Badge, BadgeType } from "~/components/Badges";
 import { status } from "~/lib/.server/api/status";
 import { toast } from "react-toastify";
-import { Badge, BadgeType } from "~/components/Badges";
 import { PageButton } from "~/components/Header";
 
 interface TableRow {
