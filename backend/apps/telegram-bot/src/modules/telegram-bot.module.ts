@@ -5,6 +5,7 @@ import { TelegrafModule } from 'nestjs-telegraf';
 import { ClickHouseModule } from '@app/clickhouse';
 import { ClickHouseLogLevel } from '@clickhouse/client';
 import { MessagesModule } from './messages/messages.module';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
     imports: [
@@ -17,6 +18,29 @@ import { MessagesModule } from './messages/messages.module';
                     token: configService.getOrThrow('TELEGRAM_BOT_TOKEN'),
                 };
             },
+        }),
+        ClientsModule.registerAsync({
+            clients: [
+                {
+                    imports: [ConfigModule],
+                    inject: [ConfigService],
+                    useFactory: (config: ConfigService) => ({
+                        name: 'SCRAPER_PRODUCER',
+                        transport: Transport.KAFKA,
+                        options: {
+                            client: {
+                                clientId: 'scraper',
+                                brokers: [
+                                    config.get<string>('KAFKA_ENDPOINT')!,
+                                ],
+                                connectionTimeout: 100000,
+                            },
+                            producerOnlyMode: true,
+                        },
+                    }),
+                    name: 'SCRAPER_PRODUCER',
+                },
+            ],
         }),
         ClickHouseModule.forRootAsync({
             inject: [ConfigService],
