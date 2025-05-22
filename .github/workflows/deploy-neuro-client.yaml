@@ -1,4 +1,4 @@
-name: Docker Build & Deploy Backend
+name: Docker Build & Deploy Backend (neuro-client)
 
 on:
   push:
@@ -13,6 +13,7 @@ env:
   DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
   HF_TOKEN: ${{ secrets.HF_TOKEN }}
   KAFKA_ENDPOINT: ${{ secrets.KAFKA_ENDPOINT }}
+  AI_ENDPOINT: ${{ secrets.AI_ENDPOINT }}
 
 jobs:
   deploy:
@@ -53,7 +54,7 @@ jobs:
 
       - name: Run new container
         run: |
-          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e KAFKA_ENDPOINT=$KAFKA_ENDPOINT -e HF_TOKEN="$HF_TOKEN" -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
+          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e KAFKA_ENDPOINT=$KAFKA_ENDPOINT -e HF_TOKEN="$HF_TOKEN" -e AI_ENDPOINT=$AI_ENDPOINT -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
 
       - name: Remove old images of the same container (keep current)
         run: |
