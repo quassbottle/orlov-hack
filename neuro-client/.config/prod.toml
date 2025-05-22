@@ -1,0 +1,16 @@
+[kafka]
+brokers = ['${KAFKA_ENDPOINT}']
+raw_topic = 'messages.raw'
+click_topic = 'messages'
+poll = 10.0
+producer_client_id = 'analyzer-producer'
+consumer_group = 'raw_message_consumer_group'
+offset_reset_settings = 'earliest'
+auto_commit = false
+consumer_client_id = 'analyzer-consumer'
+socket_timeout_ms = 10000
+session_timeout_ms = 6000
+
+[deep_seek]
+url = 'https://router.huggingface.co/novita/v3/openai/chat/completions'
+token = "${HF_TOKEN}"

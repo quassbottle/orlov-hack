@@ -1,13 +1,13 @@
-import { LoaderFunction, json } from "@remix-run/node";
+import { LoaderFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
-import { clickhouse } from "~/lib/.server/clickhouse";
 import { useState } from "react";
+import { clickhouse } from "~/lib/.server/clickhouse";
 
 interface TableRow {
-    created_at: string;
-    address: string;
-    message: string;
-    source: string;
+    created_at?: string;
+    message?: string;
+    source?: string;
+    longMessage?: string;
 }
 
 // Сортировка по улице и номеру
@@ -40,10 +40,21 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
 
     if (addressFilter) {
-        filtered = filtered.filter((row) =>
-            row.address.toLowerCase().includes(addressFilter)
+        filtered = filtered.filter(
+            (row) =>
+                row.location &&
+                row.location.toLowerCase().includes(addressFilter)
         );
     }
+
+    const result = filtered.map(
+        (row): TableRow => ({
+            source: row.source,
+            message: row.problem!,
+            created_at: new Date(row.created_at).toLocaleString("ru-RU"),
+            longMessage: row.original_text!,
+        })
+    );
 
     // filtered.sort((a, b) => {
     //     const addrA = parseAddress(a.address);
@@ -54,14 +65,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     //         : addrA.number - addrB.number;
     // });
 
-    const result: TableRow[] = filtered.map((row) => ({
-        source: row.source,
-        message: row.message,
-        created_at: new Date(row.created_at).toLocaleString("ru-RU"),
-        address: row.address,
-    }));
-
-    return json(result);
+    return result;
 };
 
 export default function Index() {
@@ -89,141 +93,58 @@ export default function Index() {
         setSearchParams(params);
     };
 
+    const [isWindowOpened, setWindowOpen] = useState(false);
+    const [curInfo, setCurInfo] = useState(0);
+
     return (
-        <div className="p-6 bg-gray-900 text-white min-h-screen">
-            <h1 className="text-3xl font-bold mb-6">Жалобы</h1>
-
-            {/* === ФИЛЬТРЫ === */}
-            <div className="flex flex-wrap items-end gap-4 mb-6">
-                {/* Фильтр по дате С */}
-                <div>
-                    <label htmlFor="start-date" className="block text-sm">
-                        С:
-                    </label>
-                    <div className="flex gap-2 items-center">
-                        <input
-                            id="start-date"
-                            type="datetime-local"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            className="bg-gray-800 border border-gray-700 p-2 rounded text-white"
-                        />
-                        {startDate && (
-                            <button
-                                onClick={() => {
-                                    setStartDate("");
-                                    updateParams({ start: null });
-                                }}
-                                className="text-red-500 text-xl leading-none"
-                            >
-                                ❌
-                            </button>
-                        )}
+        <div className="p-4 text-white bg-gray-900 min-h-screen">
+            {isWindowOpened ? (
+                <div className="fixed top-0 h-screen w-screen right-[1px] z-1 bg-black/50">
+                    <div>
+                        <div>
+                            <div>{data[curInfo].longMessage}</div>
+                            <div>Важный/нет</div>
+                        </div>
+                        <div>Статус</div>
                     </div>
                 </div>
-
-                {/* Фильтр по дате По */}
-                <div>
-                    <label htmlFor="end-date" className="block text-sm">
-                        По:
-                    </label>
-                    <div className="flex gap-2 items-center">
-                        <input
-                            id="end-date"
-                            type="datetime-local"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            className="bg-gray-800 border border-gray-700 p-2 rounded text-white"
-                        />
-                        {endDate && (
-                            <button
-                                onClick={() => {
-                                    setEndDate("");
-                                    updateParams({ end: null });
-                                }}
-                                className="text-red-500 text-xl leading-none"
-                            >
-                                ❌
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                <button
-                    onClick={() => updateParams()}
-                    className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mt-6"
-                >
-                    Фильтровать по дате
-                </button>
-
-                {/* Фильтр по адресу */}
-                <div>
-                    <label htmlFor="address-filter" className="block text-sm">
-                        По адресу:
-                    </label>
-                    <div className="flex gap-2 items-center">
-                        <input
-                            id="address-filter"
-                            type="text"
-                            value={address}
-                            onChange={(e) => setAddress(e.target.value)}
-                            placeholder="например: сияй мага"
-                            className="bg-gray-800 border border-gray-700 p-2 rounded text-white"
-                        />
-                        {address && (
-                            <button
-                                onClick={() => {
-                                    setAddress("");
-                                    updateParams({ address: null });
-                                }}
-                                className="text-red-500 text-xl leading-none"
-                            >
-                                ❌
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                <button
-                    onClick={() => updateParams()}
-                    className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded mt-6"
-                >
-                    Фильтровать по адресу
-                </button>
-            </div>
-
-            {/* === ТАБЛИЦА === */}
+            ) : (
+                <></>
+            )}
+            <h1 className="text-2xl font-bold mb-4">Жалобы</h1>
             <table className="table-auto w-full border-collapse border border-gray-700">
                 <thead className="bg-gray-800">
                     <tr>
                         <th className="border border-gray-700 px-4 py-2 text-left">
-                            Время
+                            Проблема
                         </th>
-                        <th className="border border-gray-700 px-4 py-2 text-left">
-                            Адрес
-                        </th>
-                        <th className="border border-gray-700 px-4 py-2 text-left">
-                            Жалоба
-                        </th>
-                        <th className="border border-gray-700 px-4 py-2 text-left">
-                            Источник
-                        </th>
+                        <th className="border border-gray-700 px-4 py-2 text-left"></th>
                     </tr>
                 </thead>
                 <tbody>
                     {data.map((row, index) => (
                         <tr key={index} className="hover:bg-gray-800">
                             <td className="border border-gray-700 px-4 py-2">
-                                {row.created_at}
-                            </td>
-                            <td className="border border-gray-700 px-4 py-2">
-                                {row.address}
-                            </td>
-                            <td className="border border-gray-700 px-4 py-2">
                                 {row.message}
                             </td>
                             <td className="border border-gray-700 px-4 py-2">
-                                {row.source}
+                                <button
+                                    id={"button_" + index}
+                                    className="text-[24pt] cursor-pointer border-none bg-none"
+                                    onClick={(event) => {
+                                        setWindowOpen(!isWindowOpened);
+                                        setCurInfo(
+                                            Number(
+                                                (
+                                                    event.target as HTMLButtonElement
+                                                ).id.split("_")[1]
+                                            )
+                                        );
+                                        console.log(data[curInfo]);
+                                    }}
+                                >
+                                    ···
+                                </button>
                             </td>
                         </tr>
                     ))}

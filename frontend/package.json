@@ -19,6 +19,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/leaflet": "^1.9.18",
     "bcrypt": "^6.0.0",
+    "dotenv-cli": "^8.0.0",
     "isbot": "^4.1.0",
     "leaflet": "^1.9.4",
     "prisma": "^6.8.2",

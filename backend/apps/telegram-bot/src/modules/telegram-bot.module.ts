@@ -24,6 +24,8 @@ import { MessagesModule } from './messages/messages.module';
             useFactory(configService: ConfigService) {
                 return {
                     url: configService.getOrThrow('CLICKHOUSE_URL'),
+                    username: 'admin',
+                    password: 'password',
                     log: {
                         level: ClickHouseLogLevel.DEBUG,
                     },

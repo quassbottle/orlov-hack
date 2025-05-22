@@ -3,11 +3,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ScraperWorker } from './scraper.worker';
 import { TelegramModule } from '../telegram/telegram.module';
+import { PrismaModule } from '@app/db';
 
 @Module({
     providers: [ScraperWorker],
     imports: [
         ConfigModule.forRoot(),
+        PrismaModule,
         ClientsModule.registerAsync({
             clients: [
                 {
@@ -22,6 +24,7 @@ import { TelegramModule } from '../telegram/telegram.module';
                                 brokers: [
                                     config.get<string>('KAFKA_ENDPOINT')!,
                                 ],
+                                connectionTimeout: 100000,
                             },
                             producerOnlyMode: true,
                         },

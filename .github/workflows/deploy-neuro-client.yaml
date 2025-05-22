@@ -1,26 +1,25 @@
-name: Docker Build & Deploy Frontend
+name: Docker Build & Deploy Backend
 
 on:
   push:
     branches: [master]
     paths:
-      - "frontend/**"
+      - "neuro-client/**"
 
 env:
-  CONTAINER_NAME: frontend
-  CONTAINER_PORT: 3000
+  CONTAINER_NAME: neuro-client
+  CONTAINER_PORT: 8000
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  CLICKHOUSE_URL: ${{ secrets.CLICKHOUSE_URL }}
-  SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+  HF_TOKEN: ${{ secrets.HF_TOKEN }}
+  KAFKA_ENDPOINT: ${{ secrets.KAFKA_ENDPOINT }}
 
 jobs:
   deploy:
     runs-on: self-hosted
     defaults:
       run:
-        working-directory: ./frontend
+        working-directory: ./neuro-client
 
     steps:
       - name: Checkout code
@@ -38,7 +37,7 @@ jobs:
 
       - name: Build Docker Image with unique tag
         run: |
-          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} .
+          docker build -t $CONTAINER_NAME:${{ env.SHORT_SHA }} . -f Dockerfile
 
       - name: Stop and remove containers using old images of the same container (excluding current)
         run: |
@@ -54,7 +53,7 @@ jobs:
 
       - name: Run new container
         run: |
-          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e CLICKHOUSE_URL=$CLICKHOUSE_URL -e SESSION_SECRET=$SESSION_SECRET -e DATABASE_URL=$DATABASE_URL -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
+          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e KAFKA_ENDPOINT=$KAFKA_ENDPOINT -e HF_TOKEN="$HF_TOKEN" -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
 
       - name: Remove old images of the same container (keep current)
         run: |
