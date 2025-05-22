@@ -69,6 +69,7 @@ class MessagesConsumer:
             print("Прервано пользователем")
         
         finally:
+            
             self.__consumer.close()
 
     def __get_click_message(self, original_message: RawMessage, accident_info: FullParseData) -> Message:
