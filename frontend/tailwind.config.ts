@@ -16,6 +16,20 @@ export default {
           "Noto Color Emoji",
         ],
       },
+      keyframes: {
+        slide: {
+          "0%, 25%": {
+            transform: "translateX(100%)",
+          },
+
+          "50%,75%,100%": {
+            transform: "translateX(0%)",
+          },
+        },
+      },
+      animation: {
+        slide: "slide 1s ease",
+      },
     },
   },
   plugins: [],
