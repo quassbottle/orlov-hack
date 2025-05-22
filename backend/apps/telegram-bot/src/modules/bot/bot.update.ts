@@ -14,18 +14,6 @@ enum ConversationState {
     FINISH,
 }
 
-/*
- uuid='',
-            source=original_message.source,
-            additional_data=json.dumps(original_message.from_info),
-            created_at=datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
-            original_text=original_message.text,
-            post_date=original_message.date,
-            problem=accident_info.problem,
-            location=accident_info.location[0] if len(accident_info.location) > 0 else '',
-            problem_date=accident_info.datetime[0] if len(accident_info.datetime) > 0 else ''
-*/
-
 export interface ProducerModel {
     uuid: string;
     source?: string | null;
@@ -178,7 +166,7 @@ export class BotUpdate {
             uuid,
             location: parsed.location,
             source: 'telegram-bot',
-            additional_data: "{}",
+            additional_data: '{}',
             original_text: text,
             problem: parsed.info,
             problem_date: parsed.datetime,
