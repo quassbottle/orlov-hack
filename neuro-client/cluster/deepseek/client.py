@@ -5,7 +5,7 @@ import re
 
 from cluster.deepseek.model import AccidentInfo
 from config.model import Config
-
+from cluster.deepseek.exception import BadRequestException
 
 class DeepSeekClient:
     __config: Config
@@ -20,6 +20,8 @@ class DeepSeekClient:
         )
 
         print(response, response.text)
+        if response.status_code != 200:
+            raise BadRequestException 
 
         percent = response.json()['choices'][0]['message']['content']
         true_percent = re.sub(r"[^\d]", "", percent)
@@ -34,6 +36,8 @@ class DeepSeekClient:
         )
 
         print(response, response.text)
+        if response.status_code != 200:
+            raise BadRequestException 
 
         content = response.json()['choices'][0]['message']['content']
         content = content.replace('```json', '').replace('```', '')
@@ -57,7 +61,7 @@ class DeepSeekClient:
         }
     
     def __get_deep_seek_is_accident_message(self, original_message: str) -> str:
-        return f'Является ли предложение: "{original_message}" дорожным проишествием, напиши процент того, что оно относится к нему, только процент, без лишнего текста'
+        return f'Является ли предложение: "{original_message}" жалобой или обращением на трансопртную инфратсруктуру и логистику (например, долгий светофор, плохие дороги, постоянные пробки, перекрытые дороги и др.), напиши процент того, что оно относится к нему, только процента, и главное без лишнего текста'
     
     def __get_deep_seek_accident_info(self, original_message: str) -> str:
         return f'Давай из этого предложения: "{original_message}", ты выделишь дату, время, локацию, и основную суть очень коротко отвечай ТОЛЬКО в формате json, без лишних слов, вот тебе модель ответа {{location,datetime,info}}, datetime в формате yyyy-MM-ddThh:mm:ss'

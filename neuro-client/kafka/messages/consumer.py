@@ -7,6 +7,8 @@ from kafka.messages.model import Message, RawMessage
 from kafka.messages.producer import MessagesProducer
 from service.analyzer.model import FullParseData
 from service.analyzer.service import AnalyzerService
+from cluster.deepseek.exception import BadRequestException
+
 
 class MessagesConsumer:
     __config: Config
@@ -30,31 +32,38 @@ class MessagesConsumer:
                 if msg.error():
                     print(f'Exception on kafka message: {msg.error()}')
 
-                message_value = msg.value()
-                
-                if message_value == None:
-                    print('message value is none')
-                    continue
-                
                 try:
-                    raw_message = self.__parse_raw_message(message_value.decode('utf-8'))
-                except Exception as err:
-                    print(f'Невалдиное сообщение: {message_value}, err: {err}')
-                    
-                    self.__consumer.commit()
-                    
-                    continue
+                    message_value = msg.value()
                 
-                accident_info = self.__analyzer_service.parse_data(raw_message.text)
-
-                if not accident_info.is_accident:
-                    self.__consumer.commit()
-                    continue
+                    if message_value == None:
+                        print('message value is none')
+                        continue
                 
-                self.__message_producer.push_message(self.__get_click_message(raw_message, accident_info))
-                self.__consumer.commit()
+                    try:
+                        raw_message = self.__parse_raw_message(message_value.decode('utf-8'))
+                    except Exception as err:
+                        print(f'Невалдиное сообщение: {message_value}, err: {err}')
+                    
+                        self.__consumer.commit()
+                    
+                        continue
+                
+                    accident_info = self.__analyzer_service.parse_data(raw_message.text)
 
-
+                    if not accident_info.is_accident:
+                        self.__consumer.commit()
+                        continue
+                
+                    self.__message_producer.push_message(self.__get_click_message(raw_message, accident_info))
+                    self.__consumer.commit()
+                except json.JSONDecodeError as e:
+                    print(f'Invalid JSON message: {message_value}, error: {e}')
+                    self.__consumer.commit()
+                except BadRequestException as e:
+                    print('Bad Request')
+                except Exception as e:
+                    print(f'Error processing message: {e}')
+                    self.__consumer.commit()
        
         except KeyboardInterrupt:
             print("Прервано пользователем")

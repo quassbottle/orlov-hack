@@ -2,7 +2,7 @@
 brokers = ['${KAFKA_ENDPOINT}']
 raw_topic = 'messages.raw'
 click_topic = 'messages'
-poll = 5.0
+poll = 10.0
 producer_client_id = 'analyzer-producer'
 consumer_group = 'raw_message_consumer_group'
 offset_reset_settings = 'earliest'
