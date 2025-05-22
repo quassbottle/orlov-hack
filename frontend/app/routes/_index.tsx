@@ -3,6 +3,7 @@ import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
 import { clickhouse } from "~/lib/.server/clickhouse";
 import Fire from "public/fire.svg";
+import { Badge } from "~/lib/.client/components/Badges";
 
 interface TableRow {
   created_at?: string;
@@ -99,11 +100,11 @@ export default function Index() {
   return (
     <div className="p-4 text-white bg-gray-900 min-h-screen">
       {isWindowOpened ? (
-        <div className="animate-slide fixed flex justify-end top-0 h-screen w-screen right-[1px] bg-black/75">
-          <div className="flex flex-col w-1/2 h-screen p-5 bg-gray-900">
+        <div className="fixed flex justify-end top-0 h-screen w-screen right-[1px] bg-black/75">
+          <div className="animate-slide flex flex-col w-1/2 h-screen pt-4 rounded-md bg-gray-900">
             <div className="flex flex-row justify-end">
               <button
-                className="text-[30pt]"
+                className="text-[30pt] mr-4"
                 onClick={() => {
                   setWindowOpen(!isWindowOpened);
                 }}
@@ -111,25 +112,29 @@ export default function Index() {
                 ×
               </button>
             </div>
-            <div className="text-[72pt] pb-[300px]">Место для карты</div>
-            <div className="bg-gray-800 flex flex-col gap-[20px] overflow-y-auto h-1/2 overflow-x-hidden p-2">
-              <div className="flex flex-row gap-2 ">
-                <div className="flex flex-row max-w-[70%] gap-2">
-                  <div className="max-w-[78%] truncate">
-                    {data[curInfo].message}
+            <div className="text-[72pt] pb-[300px] mx-4">Место для карты</div>
+            <div className="bg-gray-800 flex flex-col rounded-bl-md justify-between overflow-y-auto h-1/2 overflow-x-hidden p-2">
+              <div className="flex flex-col gap-[20px]">
+                <div className="flex flex-row justify-between ">
+                  <div className="flex flex-row max-w-[85%] gap-2">
+                    <div className="pt-[5px]">
+                      {isImportant ? (
+                        <img className="w-6 h-6" src={Fire}></img>
+                      ) : (
+                        <></>
+                      )}
+                    </div>
+                    <div className="max-w-[78%] text-[18pt] truncate">
+                      {data[curInfo].message}
+                    </div>
                   </div>
-                  <div>
-                    {isImportant ? (
-                      <img className="w-6 h-6" src={Fire}></img>
-                    ) : (
-                      <></>
-                    )}
-                  </div>
+                  <Badge type="done"></Badge>
                 </div>
-                <div>Статус</div>
+                <div>{data[curInfo].longMessage}</div>
               </div>
-              <div>Дата: {data[curInfo].created_at}</div>
-              <div>{data[curInfo].longMessage}</div>
+              <div className="text-gray-400">
+                Дата: {data[curInfo].created_at}
+              </div>
             </div>
           </div>
         </div>
