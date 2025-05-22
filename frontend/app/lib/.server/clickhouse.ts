@@ -9,19 +9,17 @@ import { Readable } from "stream";
 import { singleton } from "./singleton";
 import { randomUUID } from "crypto";
 
-// Тип строки таблицы messages
 export interface MessageRecord {
-    id: string;
-    source: string;
-    from: string;
-    message: string;
-    created_at: Date;
-    address: string;
-    data?: string;
-    [key: string]: unknown;
+    source?: string;
+    additional_data?: string;
+    created_at: string;
+    original_text?: string;
+    post_date?: string;
+    problem?: string;
+    location?: string;
+    problem_date?: string;
 }
 
-// Конфигурация подключения
 export interface ClickHouseModuleOptions
     extends NodeClickHouseClientConfigOptions {}
 
@@ -34,7 +32,7 @@ export class ClickHouseService {
     }
 
     public async query<
-        TRow extends Record<string, unknown> = Record<string, unknown>,
+        TRow,
         TParams extends Record<string, unknown> | undefined = undefined
     >(query: string, queryParams?: TParams): Promise<TRow[]> {
         const timerLabel = `clickhouse-query [${query
