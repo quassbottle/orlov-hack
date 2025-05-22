@@ -6,6 +6,7 @@ import Fire from "public/fire.svg";
 import { Badge, BadgeType } from "~/components/Badges";
 import { status } from "~/lib/.server/api/status";
 import { toast } from "react-toastify";
+import { PageButton } from "~/components/Header";
 
 interface TableRow {
   created_at?: string;
@@ -202,7 +203,10 @@ export default function Index() {
       ) : (
         <></>
       )}
-      <h1 className="text-4xl font-bold mb-4">Жалобы</h1>
+      <div className="flex flex-row gap-5">
+        <h1 className="text-2xl font-bold mb-4">Жалобы</h1>
+        <PageButton path="/channels" text="Каналы"></PageButton>
+      </div>
       <table className="table-auto w-full border-collapse border border-gray-700">
         <thead className="bg-gray-800">
           <tr>
