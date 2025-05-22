@@ -186,7 +186,7 @@ export class BotUpdate {
             post_date: new Date().toUTCString(),
         };
 
-        this.producer.emit('messages', { ...producer, key: uuid });
+        this.producer.emit('messages', { value: producer, key: uuid });
 
         return producer;
     }
