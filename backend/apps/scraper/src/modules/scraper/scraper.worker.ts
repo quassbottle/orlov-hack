@@ -26,7 +26,7 @@ export class ScraperWorker implements OnModuleInit {
         await this.scrapAllChannels();
     }
 
-    @Cron('0 */5 * * * *') // Каждые 5 минут
+    @Cron('0 */5 * * * *') 
     async scrapAllChannels() {
         const channels = await this.prisma.telegramChannel.findMany();
         this.logger.log(`Scheduled scrape of ${channels.length} channels`);
