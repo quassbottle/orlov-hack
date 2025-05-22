@@ -69,10 +69,12 @@ class MessagesConsumer:
             print("Прервано пользователем")
         
         finally:
+            
             self.__consumer.close()
 
     def __get_click_message(self, original_message: RawMessage, accident_info: FullParseData) -> Message:
         return Message(
+            uuid='',
             source=original_message.source,
             additional_data=json.dumps(original_message.from_info),
             created_at=datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
