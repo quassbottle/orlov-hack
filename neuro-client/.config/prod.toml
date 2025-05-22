@@ -16,4 +16,4 @@ url = 'https://router.huggingface.co/novita/v3/openai/chat/completions'
 token = "${HF_TOKEN}"
 
 [telegram]
-TG_BOT_TOKEN = ''
+TG_BOT_TOKEN = '8118723919:AAGVNYE3oGwGk_YC7SKeg9bPRcbH2dWPbIA'
