@@ -2,6 +2,7 @@ import { LoaderFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
 import { clickhouse } from "~/lib/.server/clickhouse";
+import Fire from "public/fire.svg";
 
 interface TableRow {
   created_at?: string;
@@ -73,6 +74,7 @@ export default function Index() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [address, setAddress] = useState("");
+  const isImportant = true;
 
   const updateParams = (custom?: Record<string, string | null>) => {
     const params = new URLSearchParams();
@@ -110,13 +112,19 @@ export default function Index() {
               </button>
             </div>
             <div className="text-[72pt] pb-[300px]">Место для карты</div>
-            <div className="bg-gray-800 flex flex-col gap-[20px]">
-              <div className="flex flex-row gap-[40%]">
-                <div className="flex flex-row gap-4">
-                  <div className="max-w-[50%] truncate">
+            <div className="bg-gray-800 flex flex-col gap-[20px] overflow-y-auto h-1/2 overflow-x-hidden p-2">
+              <div className="flex flex-row gap-2 ">
+                <div className="flex flex-row max-w-[70%] gap-2">
+                  <div className="max-w-[78%] truncate">
                     {data[curInfo].message}
                   </div>
-                  <div>Важный/нет</div>
+                  <div>
+                    {isImportant ? (
+                      <img className="w-6 h-6" src={Fire}></img>
+                    ) : (
+                      <></>
+                    )}
+                  </div>
                 </div>
                 <div>Статус</div>
               </div>
