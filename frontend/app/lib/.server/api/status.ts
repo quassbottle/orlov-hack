@@ -1,3 +1,4 @@
+import { BadgeType } from "~/lib/.client/components/Badges";
 import { prisma } from "../prisma";
 
 async function get(params: { messageId: string }) {
@@ -23,11 +24,15 @@ async function get(params: { messageId: string }) {
 async function decline(params: { messageId: string }) {
   const { messageId } = params;
 
-  return prisma.status.update({
+  return prisma.status.upsert({
     where: {
       messageId,
     },
-    data: {
+    update: {
+      status: "DECLINED",
+    },
+    create: {
+      messageId,
       status: "DECLINED",
     },
   });
@@ -36,12 +41,33 @@ async function decline(params: { messageId: string }) {
 async function resolve(params: { messageId: string }) {
   const { messageId } = params;
 
-  return prisma.status.update({
+  return prisma.status.upsert({
     where: {
       messageId,
     },
-    data: {
+    update: {
       status: "DONE",
+    },
+    create: {
+      messageId,
+      status: "DONE",
+    },
+  });
+}
+
+async function upsert(params: { messageId: string; status: BadgeType }) {
+  const { messageId, status } = params;
+
+  return prisma.status.upsert({
+    where: {
+      messageId,
+    },
+    update: {
+      status,
+    },
+    create: {
+      messageId,
+      status,
     },
   });
 }
@@ -50,4 +76,5 @@ export const status = Object.freeze({
   resolve,
   decline,
   get,
+  upsert,
 });

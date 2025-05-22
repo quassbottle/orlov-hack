@@ -1,15 +1,19 @@
-import { LoaderFunction } from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import { ActionFunctionArgs, LoaderFunction } from "@remix-run/node";
+import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
 import { clickhouse } from "~/lib/.server/clickhouse";
 import Fire from "public/fire.svg";
-import { Badge } from "~/lib/.client/components/Badges";
+import { Badge, BadgeType } from "~/lib/.client/components/Badges";
+import { status } from "~/lib/.server/api/status";
+import { toast } from "react-toastify";
 
 interface TableRow {
   created_at?: string;
   message?: string;
   source?: string;
   longMessage?: string;
+  status: BadgeType;
+  uuid: string;
 }
 
 // Сортировка по улице и номеру
@@ -30,6 +34,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   const raw = await clickhouse.getTableInfo();
   console.log(raw);
+
   let filtered = raw;
 
   if (dateStart) {
@@ -48,24 +53,30 @@ export const loader: LoaderFunction = async ({ request }) => {
     );
   }
 
-  const result = filtered.map(
-    (row): TableRow => ({
-      source: row.source,
-      message: row.problem!,
-      created_at: new Date(row.created_at).toLocaleString("ru-RU"),
-      longMessage: row.original_text!,
-    })
+  const result = await Promise.all(
+    filtered.map(
+      async (row): Promise<TableRow> => ({
+        source: row.source,
+        message: row.problem!,
+        created_at: new Date(row.created_at).toLocaleString("ru-RU"),
+        longMessage: row.original_text!,
+        status: (await status.get({ messageId: row.uuid })).status as BadgeType,
+        uuid: row.uuid,
+      })
+    )
   );
 
-  // filtered.sort((a, b) => {
-  //     const addrA = parseAddress(a.address);
-  //     const addrB = parseAddress(b.address);
-  //     const streetCompare = addrA.street.localeCompare(addrB.street, "ru");
-  //     return streetCompare !== 0
-  //         ? streetCompare
-  //         : addrA.number - addrB.number;
-  // });
   return result;
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+  const messageId = formData.get("messageId") as string;
+  const actionType = formData.get("actionType") as string;
+
+  await status.upsert({ messageId, status: actionType });
+
+  return null;
 };
 
 export default function Index() {
@@ -100,8 +111,14 @@ export default function Index() {
   return (
     <div className="p-4 text-white bg-gray-900 min-h-screen">
       {isWindowOpened ? (
-        <div className="fixed flex justify-end top-0 h-screen w-screen right-[1px] bg-black/75">
-          <div className="animate-slide flex flex-col w-1/2 h-screen pt-4 rounded-md bg-gray-900">
+        <div className="fixed flex justify-end top-0 h-screen w-screen flex-row right-0 bg-black/75">
+          <div
+            className="h-full w-1/2 bg-transparent"
+            onClick={() => {
+              setWindowOpen(!isWindowOpened);
+            }}
+          ></div>
+          <div className="animate-slide flex flex-col w-1/2 h-screen rounded-md bg-gray-900">
             <div className="flex flex-row justify-end">
               <button
                 className="text-[30pt] mr-4"
@@ -112,28 +129,71 @@ export default function Index() {
                 ×
               </button>
             </div>
-            <div className="text-[72pt] pb-[300px] mx-4">Место для карты</div>
-            <div className="bg-gray-800 flex flex-col rounded-bl-md justify-between overflow-y-auto h-1/2 overflow-x-hidden p-3">
+            <div className="text-2xl pb-[30%] mx-4">Место для карты</div>
+            <div className="bg-gray-800 flex flex-col rounded-bl-md justify-between overflow-y-auto h-full overflow-x-hidden p-3">
               <div className="flex flex-col gap-[20px]">
                 <div className="flex flex-row justify-between ">
                   <div className="flex flex-row max-w-[85%] gap-2">
                     <div className="pt-[5px]">
                       {isImportant ? (
-                        <img className="w-6 h-6" src={Fire}></img>
+                        <img alt="fire" className="w-6 h-6" src={Fire}></img>
                       ) : (
                         <></>
                       )}
                     </div>
-                    <div className="max-w-[78%] text-[18pt] truncate">
+                    <div className="max-w-[78%] text-xl truncate">
                       {data[curInfo].message}
                     </div>
                   </div>
-                  <Badge type="done"></Badge>
+                  <Badge type={data[curInfo].status}></Badge>
                 </div>
                 <div>{data[curInfo].longMessage}</div>
               </div>
-              <div className="text-gray-400">
-                Дата: {data[curInfo].created_at}
+              <div className="justify-end flex flex-col gap-4">
+                <p className=" text-gray-400">
+                  Дата: {data[curInfo].created_at}
+                </p>
+                {data[curInfo].status !== "DONE" && (
+                  <Form method="post">
+                    <div className="flex flex-row justify-between w-full">
+                      <input
+                        type="hidden"
+                        name="messageId"
+                        value={data[curInfo].uuid}
+                      />
+                      {data[curInfo].status === "WAITING" ||
+                      data[curInfo].status === "DECLINED" ? (
+                        <button
+                          type="submit"
+                          name="actionType"
+                          value="PROGRESS"
+                          className="rounded-md py-2 px-4 bg-green-600"
+                        >
+                          Взять в работу
+                        </button>
+                      ) : (
+                        <button
+                          type="submit"
+                          name="actionType"
+                          value="DONE"
+                          className="rounded-md py-2 px-4 bg-green-600"
+                        >
+                          Завершить
+                        </button>
+                      )}
+                      {data[curInfo].status !== "DECLINED" && (
+                        <button
+                          type="submit"
+                          name="actionType"
+                          value="DECLINED"
+                          className="rounded-md py-2 px-4 bg-red-600"
+                        >
+                          Отклонить
+                        </button>
+                      )}
+                    </div>
+                  </Form>
+                )}
               </div>
             </div>
           </div>
@@ -153,7 +213,14 @@ export default function Index() {
         </thead>
         <tbody>
           {data.map((row, index) => (
-            <tr key={index} className="hover:bg-gray-800">
+            <tr
+              key={index}
+              className="hover:bg-gray-800"
+              onClick={() => {
+                setWindowOpen(!isWindowOpened);
+                setCurInfo(Number(("button_" + index).split("_")[1]));
+              }}
+            >
               <td className="border border-gray-700 px-4 py-2">
                 {row.message}
               </td>

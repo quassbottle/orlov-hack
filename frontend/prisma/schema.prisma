@@ -16,6 +16,7 @@ model User {
 }
 
 enum StatusType {
+  WAITING
   PROGRESS
   DONE
   DECLINED
@@ -27,7 +28,7 @@ model Status {
   id Int @id @default(autoincrement())
 
   messageId String     @unique @map("message_id")
-  status    StatusType @default(PROGRESS)
+  status    StatusType @default(WAITING)
 
   @@map("status")
 }
