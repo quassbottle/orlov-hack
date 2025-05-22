@@ -36,6 +36,7 @@ class DeepSeekClient:
         )
 
         print(response, response.text)
+        
         if response.status_code != 200:
             raise BadRequestException 
 
