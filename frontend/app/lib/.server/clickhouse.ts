@@ -87,6 +87,8 @@ export class ClickHouseService {
 // Инициализация клиента и экспорт через singleton
 const clickhouseClient = new ClickHouseService({
     url: process.env.CLICKHOUSE_URL!,
+    username: process.env.CLICKHOUSE_USER!,
+    password: process.env.CLICKHOUSE_PASSWORD!,
 });
 
 export const clickhouse = singleton("clickhouse", () => clickhouseClient);
