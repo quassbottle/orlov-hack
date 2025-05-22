@@ -1,5 +1,5 @@
 [kafka]
-brokers = ['kafka:29092']
+brokers = ['${KAFKA_ENDPOINT}']
 raw_topic = 'messages.raw'
 click_topic = 'messages'
 poll = 5.0
