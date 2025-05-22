@@ -182,8 +182,8 @@ export class BotUpdate {
             original_text: text,
             problem: parsed.info,
             problem_date: parsed.datetime,
-            created_at: new Date().toUTCString(),
-            post_date: new Date().toUTCString(),
+            created_at: new Date().toISOString(),
+            post_date: new Date().toISOString(),
         };
 
         this.producer.emit('messages', { value: producer, key: uuid });
