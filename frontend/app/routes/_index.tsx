@@ -113,7 +113,7 @@ export default function Index() {
               </button>
             </div>
             <div className="text-[72pt] pb-[300px] mx-4">Место для карты</div>
-            <div className="bg-gray-800 flex flex-col rounded-bl-md justify-between overflow-y-auto h-1/2 overflow-x-hidden p-2">
+            <div className="bg-gray-800 flex flex-col rounded-bl-md justify-between overflow-y-auto h-1/2 overflow-x-hidden p-3">
               <div className="flex flex-col gap-[20px]">
                 <div className="flex flex-row justify-between ">
                   <div className="flex flex-row max-w-[85%] gap-2">
