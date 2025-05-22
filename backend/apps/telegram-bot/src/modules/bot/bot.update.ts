@@ -178,7 +178,7 @@ export class BotUpdate {
             uuid,
             location: parsed.location,
             source: 'telegram-bot',
-            additional_data: null,
+            additional_data: "{}",
             original_text: text,
             problem: parsed.info,
             problem_date: parsed.datetime,
