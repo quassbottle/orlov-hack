@@ -66,14 +66,6 @@ class DeepSeekClient:
         return {
            "prompt": message 
         }
-        # return {
-        #     "messages": [{
-        #         "role": "user",
-        #         "content": message
-        #     }],
-        #     "model": "deepseek/deepseek-v3-turbo",
-        #     "stream": False
-        # }
     
     def __get_deep_seek_is_accident_message(self, original_message: str) -> str:
         return f'''
