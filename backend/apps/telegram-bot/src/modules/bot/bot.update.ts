@@ -246,14 +246,12 @@ export class BotUpdate {
         );
 
         if (moreQuestions?.length > 0) {
-            // Фильтруем вопросы, которые уже были заданы
             const newQuestions = moreQuestions.filter(
                 (q) =>
                     !userState.clarifications.some((c) => c.question === q) &&
                     !userState.pendingQuestions.includes(q),
             );
 
-            // Добавляем не больше чем осталось до MAX_QUESTIONS
             const remainingQuestions =
                 this.MAX_QUESTIONS - userState.askedQuestionsCount;
             userState.pendingQuestions = [
