@@ -49,8 +49,6 @@ class DeepSeekClient:
             raise BadRequestException 
 
         content = response.json()['response']
-        print(content)
-
         content = content.replace('```json', '').replace('```', '')
 
         return AccidentInfo(**json.loads(content))
