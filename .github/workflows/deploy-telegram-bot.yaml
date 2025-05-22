@@ -13,6 +13,7 @@ env:
   DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   CLICKHOUSE_URL: ${{ secrets.CLICKHOUSE_URL }}
+  AI_ENDPOINT: ${{ secrets.AI_ENDPOINT }}
   TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
 jobs:
@@ -54,7 +55,7 @@ jobs:
 
       - name: Run new container
         run: |
-          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN -e CLICKHOUSE_URL=$CLICKHOUSE_URL -e DATABASE_URL=$DATABASE_URL -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
+          docker run -d --name $CONTAINER_NAME-${{ env.SHORT_SHA }} --network=backend -e AI_ENDPOINT=$AI_ENDPOINT -e TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN -e CLICKHOUSE_URL=$CLICKHOUSE_URL -e DATABASE_URL=$DATABASE_URL -e ENV=production -p $CONTAINER_PORT:$CONTAINER_PORT $CONTAINER_NAME:${{ env.SHORT_SHA }}
 
       - name: Remove old images of the same container (keep current)
         run: |
