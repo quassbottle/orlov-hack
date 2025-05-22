@@ -33,7 +33,6 @@ export const loader: LoaderFunction = async ({ request }) => {
   const addressFilter = url.searchParams.get("address")?.toLowerCase().trim();
 
   const raw = await clickhouse.getTableInfo();
-  console.log(raw);
 
   let filtered = raw;
 
@@ -131,17 +130,23 @@ export default function Index() {
             </div>
             <div className="text-2xl pb-[30%] mx-4">Место для карты</div>
             <div className="bg-gray-800 flex flex-col rounded-bl-md justify-between overflow-y-auto h-full overflow-x-hidden p-8">
-              <div className="flex flex-col gap-[20px]">
-                <div className="flex flex-row items-center justify-between">
-                  <div className="flex flex-row items-center gap-2 flex-1">
+              <div className="flex flex-col gap-5">
+                <div className="flex items-center w-full">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
                     {isImportant && (
-                      <img alt="fire" className="w-6 h-6" src={Fire} />
+                      <img
+                        alt="fire"
+                        className="flex-shrink-0 w-6 h-6"
+                        src={Fire}
+                      />
                     )}
-                    <div className="text-xl truncate max-w-[70%]">
+                    <div className="text-xl truncate">
                       {data[curInfo].message}
                     </div>
                   </div>
-                  <Badge type={data[curInfo].status} />
+                  <div className="flex-shrink-0 ml-2">
+                    <Badge type={data[curInfo].status} />
+                  </div>
                 </div>
                 <div className="text-wrap">{data[curInfo].longMessage}</div>
               </div>
@@ -197,7 +202,7 @@ export default function Index() {
       ) : (
         <></>
       )}
-      <h1 className="text-2xl font-bold mb-4">Жалобы</h1>
+      <h1 className="text-4xl font-bold mb-4">Жалобы</h1>
       <table className="table-auto w-full border-collapse border border-gray-700">
         <thead className="bg-gray-800">
           <tr>
