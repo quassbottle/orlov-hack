@@ -1,17 +1,21 @@
 const BadgesTypes = {
-  processing: "bg-gray-600",
-  researching: "bg-yellow-700",
-  done: "bg-green-700",
+  WAITING: "bg-gray-600",
+  PROGRESS: "bg-yellow-700",
+  DONE: "bg-green-700",
+  DECLINED: "bg-red-700",
 };
 
 const BadgesText = {
-  processing: "Не рассмотрено",
-  researching: "Изучается",
-  done: "Завершено",
+  WAITING: "Ожидает",
+  PROGRESS: "В Работе",
+  DONE: "Завершено",
+  DECLINED: "Отклонено",
 };
 
+export type BadgeType = "WAITING" | "PROGRESS" | "DONE" | "DECLINED";
+
 type IBadge = {
-  type: "processing" | "researching" | "done";
+  type: BadgeType;
   className?: string;
 };
 
@@ -20,7 +24,7 @@ export const Badge = (data: IBadge) => {
     <div
       className={`${BadgesTypes[data.type]} ${
         data.className ? data.className : ""
-      } text-white w-fit px-1.5 rounded-md pt-[7px] text-[10pt] text-center align-middle`}
+      } w-[90px] text-white px-2 rounded-md py-2 text-[10pt] text-center align-middle items-center`}
     >
       {BadgesText[data.type]}
     </div>
