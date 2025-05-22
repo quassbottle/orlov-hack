@@ -5,6 +5,7 @@ import { MessagesService } from '../messages/messages.service';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
 import { ClientKafka } from '@nestjs/microservices';
+import { randomUUID } from 'crypto';
 
 enum ConversationState {
     START,
@@ -171,8 +172,10 @@ export class BotUpdate {
             result.replace('```json', '').replace('```', ''),
         ) as { location: string; datetime: string; info: string };
 
+        const uuid = randomUUID();
+
         const producer: ProducerModel = {
-            uuid: '',
+            uuid,
             location: parsed.location,
             source: 'telegram-bot',
             additional_data: null,
@@ -183,7 +186,7 @@ export class BotUpdate {
             post_date: new Date().toUTCString(),
         };
 
-        this.producer.emit('messages', producer);
+        this.producer.emit('messages', { ...producer, key: uuid });
 
         return producer;
     }
