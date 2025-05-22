@@ -19,6 +19,8 @@ class DeepSeekClient:
             json=self.__get_deep_seek_payload(self.__get_deep_seek_is_accident_message(text))
         )
 
+        print(response, response.text)
+
         percent = response.json()['choices'][0]['message']['content']
         true_percent = re.sub(r"[^\d]", "", percent)
 
@@ -30,6 +32,8 @@ class DeepSeekClient:
             headers=self.__get_base_headers(),
             json=self.__get_deep_seek_payload(self.__get_deep_seek_accident_info(text))
         )
+
+        print(response, response.text)
 
         content = response.json()['choices'][0]['message']['content']
         content = content.replace('```json', '').replace('```', '')
