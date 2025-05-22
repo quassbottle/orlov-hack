@@ -14,3 +14,6 @@ session_timeout_ms = 6000
 [deep_seek]
 url = 'https://router.huggingface.co/novita/v3/openai/chat/completions'
 token = "${HF_TOKEN}"
+
+[telegram]
+TG_BOT_TOKEN = ''
