@@ -7,6 +7,8 @@ from kafka.messages.model import Message, RawMessage
 from kafka.messages.producer import MessagesProducer
 from service.analyzer.model import FullParseData
 from service.analyzer.service import AnalyzerService
+from cluster.deepseek.exception import BadRequestException
+
 
 class MessagesConsumer:
     __config: Config
@@ -57,6 +59,8 @@ class MessagesConsumer:
                 except json.JSONDecodeError as e:
                     print(f'Invalid JSON message: {message_value}, error: {e}')
                     self.__consumer.commit()
+                except BadRequestException as e:
+                    print('Bad Request')
                 except Exception as e:
                     print(f'Error processing message: {e}')
                     self.__consumer.commit()

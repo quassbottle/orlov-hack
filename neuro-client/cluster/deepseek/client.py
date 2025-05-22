@@ -5,7 +5,7 @@ import re
 
 from cluster.deepseek.model import AccidentInfo
 from config.model import Config
-
+from cluster.deepseek.exception import BadRequestException
 
 class DeepSeekClient:
     __config: Config
@@ -20,6 +20,8 @@ class DeepSeekClient:
         )
 
         print(response, response.text)
+        if response.status_code != 200:
+            raise BadRequestException 
 
         percent = response.json()['choices'][0]['message']['content']
         true_percent = re.sub(r"[^\d]", "", percent)
@@ -34,6 +36,8 @@ class DeepSeekClient:
         )
 
         print(response, response.text)
+        if response.status_code != 200:
+            raise BadRequestException 
 
         content = response.json()['choices'][0]['message']['content']
         content = content.replace('```json', '').replace('```', '')
