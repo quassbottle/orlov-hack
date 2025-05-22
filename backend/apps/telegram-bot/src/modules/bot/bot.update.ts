@@ -52,6 +52,7 @@ export class BotUpdate {
         private readonly messageService: MessagesService,
         private readonly configService: ConfigService,
     ) {
+        console.log(this.configService.get('AI_ENDPOINT'));
         this.apiClient = axios.create({
             baseURL: this.configService.getOrThrow('AI_ENDPOINT'),
         });
