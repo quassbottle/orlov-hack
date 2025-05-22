@@ -1,7 +1,6 @@
 import { ClickHouseService } from '@app/clickhouse';
 import { Injectable } from '@nestjs/common';
 import { MessageCreate, MessageModel } from './messages.types';
-import { randomUUID } from 'crypto';
 import { ProducerModel } from '../bot/bot.update';
 
 @Injectable()
