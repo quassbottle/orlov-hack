@@ -26,10 +26,11 @@ class MessagesProducer:
             'client.id': self.__config.kafka_producer_client_id
         }
     
-    def __produce_message(self, payload):
+    def __produce_message(self, payload: Message):
+        payload.uuid = uuid.uuid4().__str__()
         self.__producer.produce(
             topic=self.__topic,
-            key=uuid.uuid4().__str__(),
+            key=payload.uuid,
             value=self.__prepare_payload(payload),
             callback=self.__produce_callback
         )

@@ -13,20 +13,25 @@ class DeepSeekClient:
         self.__config = cfg
 
     def is_accident(self, text: str):
+        if len(text) <= 25:
+            print('message is a short:', text)
+            return False
+        
         response = requests.post(
             self.__config.deep_seek_url, 
             headers=self.__get_base_headers(),
             json=self.__get_deep_seek_payload(self.__get_deep_seek_is_accident_message(text))
         )
 
-        print(response, response.text)
         if response.status_code != 200:
             raise BadRequestException 
 
         percent = response.json()['choices'][0]['message']['content']
         true_percent = re.sub(r"[^\d]", "", percent)
 
-        return int(true_percent) >= 70
+        print(f'[{true_percent}]: {text}')
+
+        return int(true_percent) >= 60
 
     def get_accident_info(self, text: str) -> AccidentInfo:
         response = requests.post(
@@ -35,11 +40,14 @@ class DeepSeekClient:
             json=self.__get_deep_seek_payload(self.__get_deep_seek_accident_info(text))
         )
 
-        print(response, response.text)
+
         if response.status_code != 200:
             raise BadRequestException 
 
         content = response.json()['choices'][0]['message']['content']
+
+        print(content)
+
         content = content.replace('```json', '').replace('```', '')
 
         return AccidentInfo(**json.loads(content))
@@ -61,7 +69,20 @@ class DeepSeekClient:
         }
     
     def __get_deep_seek_is_accident_message(self, original_message: str) -> str:
-        return f'Является ли предложение: "{original_message}" жалобой или обращением на трансопртную инфратсруктуру и логистику (например, долгий светофор, плохие дороги, постоянные пробки, перекрытые дороги и др.), напиши процент того, что оно относится к нему, только процента, и главное без лишнего текста'
-    
+        return f'''
+            Определи, является ли предложение "{original_message}" жалобой или обращением, связанным с транспортной инфраструктурой или логистикой. Критерии:  
+            - Проблемы с дорогами (ямы, разметка, освещение и т. д.)  
+            - Работа светофоров (долгие циклы, неисправности)  
+            - Дорожные пробки, перекрытия, ремонты  
+            - Организация движения (знаки, развязки, парковки)  
+            - Общественный транспорт (маршруты, расписания)  
+            - Грузовые перевозки, логистические проблемы
+            - Иные жалобы или предложения связанные с улучшением городской среды  
+
+            Если тема не относится к перечисленному — 0%.  
+            Если относится — укажи процент релевантности (от 1% до 100%), учитывая явность жалобы/обращения.  
+            
+            Ответ только числом, без пояснений.
+        '''
     def __get_deep_seek_accident_info(self, original_message: str) -> str:
         return f'Давай из этого предложения: "{original_message}", ты выделишь дату, время, локацию, и основную суть очень коротко отвечай ТОЛЬКО в формате json, без лишних слов, вот тебе модель ответа {{location,datetime,info}}, datetime в формате yyyy-MM-ddThh:mm:ss'

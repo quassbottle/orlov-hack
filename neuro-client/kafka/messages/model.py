@@ -4,6 +4,7 @@ import typing
 
 @dataclass
 class Message:
+    uuid: typing.Optional[str] = field(metadata={'json': 'uuid'})
     source: typing.Optional[str] = field(metadata={'json': 'source'}) 
     additional_data: typing.Optional[str] = field(metadata={'json': 'additional_data'}) 
     created_at: typing.Optional[str] = field(metadata={'json': 'created_at'}) 
