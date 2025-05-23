@@ -1,15 +1,15 @@
 import { ClickHouseService } from '@app/clickhouse';
 import { Injectable } from '@nestjs/common';
-import { MessageCreate, MessageModel } from './messages.types';
-import { randomUUID } from 'crypto';
+import { MessageModel } from './messages.types';
+import { ProducerModel } from '../bot/bot.update';
 
 @Injectable()
 export class MessagesService {
     constructor(private readonly clickhouse: ClickHouseService) {}
 
-    public async create(params: MessageCreate) {
+    public async create(params: ProducerModel) {
         await this.clickhouse.insert({
-            values: { id: randomUUID(), created_at: new Date(), ...params },
+            values: { ...params },
             table: 'messages',
         });
     }

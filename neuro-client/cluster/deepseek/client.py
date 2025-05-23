@@ -18,15 +18,18 @@ class DeepSeekClient:
             return False
         
         response = requests.post(
-            self.__config.deep_seek_url, 
+            f'{self.__config.deep_seek_url}/chat', 
             headers=self.__get_base_headers(),
             json=self.__get_deep_seek_payload(self.__get_deep_seek_is_accident_message(text))
         )
 
+
+        print(response, response.text, f'{self.__config.deep_seek_url}/chat')
+
         if response.status_code != 200:
             raise BadRequestException 
 
-        percent = response.json()['choices'][0]['message']['content']
+        percent = response.json()['response']
         true_percent = re.sub(r"[^\d]", "", percent)
 
         print(f'[{true_percent}]: {text}')
@@ -35,20 +38,19 @@ class DeepSeekClient:
 
     def get_accident_info(self, text: str) -> AccidentInfo:
         response = requests.post(
-            self.__config.deep_seek_url,
+            f'{self.__config.deep_seek_url}/chat',
             headers=self.__get_base_headers(),
             json=self.__get_deep_seek_payload(self.__get_deep_seek_accident_info(text))
         )
 
-
+        print(response, response.text)
+        
         if response.status_code != 200:
             raise BadRequestException 
 
-        content = response.json()['choices'][0]['message']['content']
-
-        print(content)
-
+        content = response.json()['response']
         content = content.replace('```json', '').replace('```', '')
+
 
         return AccidentInfo(**json.loads(content))
 
@@ -60,12 +62,7 @@ class DeepSeekClient:
     
     def __get_deep_seek_payload(self, message: str):
         return {
-            "messages": [{
-                "role": "user",
-                "content": message
-            }],
-            "model": "deepseek/deepseek-v3-turbo",
-            "stream": False
+           "prompt": message 
         }
     
     def __get_deep_seek_is_accident_message(self, original_message: str) -> str:
