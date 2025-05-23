@@ -309,7 +309,7 @@ export class BotUpdate {
 
         await this.sendMessageWithRetry(
             ctx,
-            `Спасибо! Вот итоговая формулировка жалобы:\n\n${finalComplaint}`,
+            `Спасибо! Ваша жалоба была направлена в соответствующее ведомство. Вот итоговая формулировка жалобы:\n\n${finalComplaint}`,
             Markup.removeKeyboard(),
         );
 
