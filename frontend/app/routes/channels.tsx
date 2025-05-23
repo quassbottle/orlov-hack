@@ -78,8 +78,8 @@ export default function Channels() {
           Добавить канал
         </button>
       </div>
-      <div>
-        <table className="w-[90dvw]">
+      <div className="flex w-screen md:w-[90dvw] px-3">
+        <table className="w-full">
           <thead className="bg-gray-800">
             <tr>
               <th className="border border-gray-700 px-4 py-2 text-center">
