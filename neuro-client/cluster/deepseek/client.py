@@ -42,15 +42,13 @@ class DeepSeekClient:
             headers=self.__get_base_headers(),
             json=self.__get_deep_seek_payload(self.__get_deep_seek_accident_info(text))
         )
-
-        print(response, response.text)
         
         if response.status_code != 200:
+            print(response, response.text)
             raise BadRequestException 
 
         content = response.json()['response']
         content = content.replace('```json', '').replace('```', '')
-
 
         return AccidentInfo(**json.loads(content))
 
