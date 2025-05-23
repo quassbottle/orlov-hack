@@ -16,7 +16,7 @@ env:
   AI_ENDPOINT: ${{ secrets.AI_ENDPOINT }}
   KAFKA_ENDPOINT: ${{ secrets.KAFKA_ENDPOINT }}
   TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-  ANALYZER_ENDPOINT: ${{ secret.ANALYZER_ENDPOINT }}
+  ANALYZER_ENDPOINT: ${{ secrets.ANALYZER_ENDPOINT }}
 
 jobs:
   deploy:
