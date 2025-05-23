@@ -25,12 +25,12 @@ export default function Channels() {
       {isOpen ? (
         <div className="fixed flex justify-end top-0 h-screen w-screen flex-row right-0 bg-black/75">
           <div
-            className="h-full w-1/2 bg-transparent"
+            className="h-full w-0 md:w-1/2 bg-transparent"
             onClick={() => {
               setOpen(!isOpen);
             }}
           ></div>
-          <div className="animate-slide flex flex-col w-1/2 h-screen rounded-md bg-gray-900">
+          <div className="animate-slide relative flex flex-col w-dvw md:w-1/2 h-screen rounded-md bg-gray-900">
             <div className="flex flex-row justify-end">
               <button
                 className="text-[30pt] mr-4"
@@ -44,7 +44,7 @@ export default function Channels() {
             <div className="flex flex-col items-center gap-4">
               <h1 className="text-2xl font-extrabold">Добавление канала</h1>
               <input
-                className="w-1/2"
+                className="w-1/2 px-3 py-2"
                 placeholder="Введите ссылку на канал"
                 onChange={(e) => {
                   setURL(e.target.value);

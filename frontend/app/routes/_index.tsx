@@ -127,12 +127,12 @@ export default function Index() {
       {isWindowOpened ? (
         <div className="fixed flex justify-end top-0 h-screen w-screen flex-row right-0 bg-black/75 z-10">
           <div
-            className="h-full w-1/2 bg-transparent"
+            className="h-full w-0 md:w-1/2  bg-transparent"
             onClick={() => {
               setWindowOpen(!isWindowOpened);
             }}
           ></div>
-          <div className="animate-slide relative flex flex-col w-1/2 h-screen rounded-md bg-gray-900 md:w-full">
+          <div className="animate-slide w-full relative flex flex-col md:w-1/2 h-screen rounded-md bg-gray-900">
             <div className="absolute top-0 right-4">
               <button
                 className="text-[30pt] items-center"
@@ -230,7 +230,7 @@ export default function Index() {
               Статус
             </th>
             <th className="border border-gray-700 p-2 text-left">Проблема</th>
-            <th className="border border-gray-700 text-left w-[100px] md:hidden"></th>
+            <th className="border border-gray-700 text-left w-[100px] h-full hidden md:table-cell"></th>
           </tr>
         </thead>
         <tbody>
@@ -258,7 +258,7 @@ export default function Index() {
                   </p>
                 </div>
               </td>
-              <td className="border border-gray-700 flex justify-center h-[66px] md:hidden">
+              <td className="border border-gray-700 hidden justify-center h-[66px] md:table-cell">
                 <button
                   id={"button_" + index}
                   className="text-[24pt] w-full h-full cursor-pointer border-none bg-none"
