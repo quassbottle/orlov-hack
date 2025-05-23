@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const client = axios.create({ baseURL: process.env.ANALYZER_ENDPOINT! });
+const client = axios.create({ baseURL: `http://5.129.202.165:8000` });
 
 interface SimilarityItem {
   similarity_count: number;
