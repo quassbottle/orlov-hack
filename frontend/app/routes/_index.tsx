@@ -16,8 +16,7 @@ interface TableRow {
   status: BadgeType;
   uuid: string;
   address?: string;
-  fire: number; // TODO
-  uuid: string;
+  fire: number;
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -101,11 +100,6 @@ export default function Index() {
     (currentPage + 1) * itemsPerPage
   );
 
-    const pageCount = Math.ceil(data.length / itemsPerPage);
-    const paginatedData = data.slice(
-        currentPage * itemsPerPage,
-        (currentPage + 1) * itemsPerPage
-    );
 
     const updateParams = (custom?: Record<string, string | null>) => {
         const params = new URLSearchParams();
