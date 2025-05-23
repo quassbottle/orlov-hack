@@ -22,11 +22,14 @@
     "dotenv-cli": "^8.0.0",
     "isbot": "^4.1.0",
     "leaflet": "^1.9.4",
+    "lucide-react": "^0.511.0",
     "prisma": "^6.8.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
     "react-leaflet": "^5.0.0",
+    "react-toastify": "^11.0.5",
+    "react-tooltip": "^5.28.1",
     "remix-utils": "^8.7.0"
   },
   "devDependencies": {

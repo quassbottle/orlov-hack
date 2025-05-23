@@ -1,97 +1,123 @@
-import { LoaderFunction } from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
-import { useState } from "react";
+import { ActionFunctionArgs, LoaderFunction, json } from "@remix-run/node";
+import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
+import { useEffect, useState } from "react";
+import SortDropdown from "~/components/dropdown";
 import { clickhouse } from "~/lib/.server/clickhouse";
-import Fire from "public/fire.svg";
+import { Badge, BadgeType } from "~/components/Badges";
+import { status } from "~/lib/.server/api/status";
+import Important from "~/components/Important";
+import { PageButton } from "~/components/Header";
 
 interface TableRow {
   created_at?: string;
   message?: string;
   source?: string;
   longMessage?: string;
+  status: BadgeType;
+  uuid: string;
+  address?: string;
+  fire: number;
 }
-
-// Сортировка по улице и номеру
-// function parseAddress(address: string) {
-//   const regex = /(.+?),\s*([0-9]+)$/;
-//   const match = address.match(regex);
-//   return {
-//     street: match?.[1]?.trim() || address.trim(),
-//     number: match?.[2] ? parseInt(match[2], 10) : 0,
-//   };
-// }
 
 export const loader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);
   const dateStart = url.searchParams.get("start");
   const dateEnd = url.searchParams.get("end");
   const addressFilter = url.searchParams.get("address")?.toLowerCase().trim();
+  const order = url.searchParams.get("order") === "desc" ? "desc" : "asc";
 
   const raw = await clickhouse.getTableInfo();
-  console.log(raw);
   let filtered = raw;
 
   if (dateStart) {
     const start = new Date(dateStart);
     filtered = filtered.filter((row) => new Date(row.created_at) >= start);
   }
+
   if (dateEnd) {
     const end = new Date(dateEnd);
     filtered = filtered.filter((row) => new Date(row.created_at) <= end);
   }
 
   if (addressFilter) {
-    filtered = filtered.filter(
-      (row) =>
-        row.location && row.location.toLowerCase().includes(addressFilter)
+    filtered = filtered.filter((row) =>
+      row.location?.toLowerCase().includes(addressFilter)
     );
   }
 
-  const result = filtered.map(
-    (row): TableRow => ({
+  filtered.sort((a, b) => {
+    const dateA = new Date(a.created_at).getTime();
+    const dateB = new Date(b.created_at).getTime();
+    return order === "asc" ? dateA - dateB : dateB - dateA;
+  });
+
+  const result = Promise.all(
+    filtered.map(async (row) => ({
       source: row.source,
       message: row.problem!,
       created_at: new Date(row.created_at).toLocaleString("ru-RU"),
       longMessage: row.original_text!,
-    })
+      address: row.location ?? "—",
+      status: (await status.get({ messageId: row.uuid })).status as BadgeType,
+      uuid: row.uuid,
+      fire: Math.random(),
+    }))
   );
 
-  // filtered.sort((a, b) => {
-  //     const addrA = parseAddress(a.address);
-  //     const addrB = parseAddress(b.address);
-  //     const streetCompare = addrA.street.localeCompare(addrB.street, "ru");
-  //     return streetCompare !== 0
-  //         ? streetCompare
-  //         : addrA.number - addrB.number;
-  // });
   return result;
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+  const messageId = formData.get("messageId") as string;
+  const actionType = formData.get("actionType") as BadgeType;
+
+  await status.upsert({ messageId, status: actionType });
+
+  return null;
 };
 
 export default function Index() {
   const data = useLoaderData<TableRow[]>();
-  const [, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [address, setAddress] = useState("");
-  const isImportant = true;
+  const [startDate, setStartDate] = useState(searchParams.get("start") || "");
+  const [endDate, setEndDate] = useState(searchParams.get("end") || "");
+  const [address, setAddress] = useState(searchParams.get("address") || "");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
+    (searchParams.get("order") as "asc" | "desc") || "asc"
+  );
+
+  const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
+  const [currentPage, setCurrentPage] = useState(
+    isNaN(pageFromUrl) ? 0 : pageFromUrl
+  );
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const pageCount = Math.ceil(data.length / itemsPerPage);
+  const paginatedData = data.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
+  );
 
   const updateParams = (custom?: Record<string, string | null>) => {
     const params = new URLSearchParams();
-
     if (startDate) params.set("start", startDate);
     if (endDate) params.set("end", endDate);
     if (address) params.set("address", address);
-
     if (custom) {
       for (const key in custom) {
         if (custom[key] === null) params.delete(key);
-        else params.set(key, custom[key] as string);
+        else params.set(key, custom[key]!);
       }
     }
-
+    params.set("order", sortOrder);
+    params.set("page", currentPage.toString());
     setSearchParams(params);
   };
+  useEffect(() => {
+    updateParams();
+  }, [sortOrder, currentPage]);
 
   const [isWindowOpened, setWindowOpen] = useState(false);
   const [curInfo, setCurInfo] = useState(0);
@@ -99,11 +125,17 @@ export default function Index() {
   return (
     <div className="p-4 text-white bg-gray-900 min-h-screen">
       {isWindowOpened ? (
-        <div className="animate-slide fixed flex justify-end top-0 h-screen w-screen right-[1px] bg-black/75">
-          <div className="flex flex-col w-1/2 h-screen p-5 bg-gray-900">
-            <div className="flex flex-row justify-end">
+        <div className="fixed flex justify-end top-0 h-screen w-screen flex-row right-0 bg-black/75 z-10">
+          <div
+            className="h-full w-1/2 bg-transparent"
+            onClick={() => {
+              setWindowOpen(!isWindowOpened);
+            }}
+          ></div>
+          <div className="animate-slide relative flex flex-col w-1/2 h-screen rounded-md bg-gray-900 md:w-full">
+            <div className="absolute top-0 right-4">
               <button
-                className="text-[30pt]"
+                className="text-[30pt] items-center"
                 onClick={() => {
                   setWindowOpen(!isWindowOpened);
                 }}
@@ -111,51 +143,125 @@ export default function Index() {
                 ×
               </button>
             </div>
-            <div className="text-[72pt] pb-[300px]">Место для карты</div>
-            <div className="bg-gray-800 flex flex-col gap-[20px] overflow-y-auto h-1/2 overflow-x-hidden p-2">
-              <div className="flex flex-row gap-2 ">
-                <div className="flex flex-row max-w-[70%] gap-2">
-                  <div className="max-w-[78%] truncate">
-                    {data[curInfo].message}
+            <div className="w-full h-[85%] flex items-center justify-center">
+              <p className="text-2xl text-gray-600 select-none">нет локации</p>
+            </div>
+            <div className="bg-gray-800 flex flex-col rounded-bl-md rounded-t-md justify-between overflow-y-auto h-full overflow-x-hidden p-8">
+              <div className="flex flex-col gap-5">
+                <div className="flex items-center w-full">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <Important
+                      value={data[curInfo].fire}
+                      className="flex-shrink-0 w-6 h-6"
+                    />
+
+                    <div className="text-xl truncate">
+                      {data[curInfo].message}
+                    </div>
                   </div>
-                  <div>
-                    {isImportant ? (
-                      <img className="w-6 h-6" src={Fire}></img>
-                    ) : (
-                      <></>
-                    )}
+                  <div className="flex-shrink-0 ml-2">
+                    <Badge type={data[curInfo].status} />
                   </div>
                 </div>
-                <div>Статус</div>
+                <div className="text-wrap">{data[curInfo].longMessage}</div>
               </div>
-              <div>Дата: {data[curInfo].created_at}</div>
-              <div>{data[curInfo].longMessage}</div>
+              <div className="justify-end flex flex-col gap-4">
+                <p className=" text-gray-400">
+                  Дата: {data[curInfo].created_at}
+                </p>
+                {data[curInfo].status !== "DONE" && (
+                  <Form method="post">
+                    <div className="flex flex-row justify-between w-full">
+                      <input
+                        type="hidden"
+                        name="messageId"
+                        value={data[curInfo].uuid}
+                      />
+                      {data[curInfo].status === "WAITING" ||
+                      data[curInfo].status === "DECLINED" ? (
+                        <button
+                          type="submit"
+                          name="actionType"
+                          value="PROGRESS"
+                          className="rounded-md py-2 px-4 bg-green-600"
+                        >
+                          Взять в работу
+                        </button>
+                      ) : (
+                        <button
+                          type="submit"
+                          name="actionType"
+                          value="DONE"
+                          className="rounded-md py-2 px-4 bg-green-600"
+                        >
+                          Завершить
+                        </button>
+                      )}
+                      {data[curInfo].status !== "DECLINED" && (
+                        <button
+                          type="submit"
+                          name="actionType"
+                          value="DECLINED"
+                          className="rounded-md py-2 px-4 bg-red-600"
+                        >
+                          Отклонить
+                        </button>
+                      )}
+                    </div>
+                  </Form>
+                )}
+              </div>
             </div>
           </div>
         </div>
       ) : (
         <></>
       )}
-      <h1 className="text-2xl font-bold mb-4">Жалобы</h1>
-      <table className="table-auto w-full border-collapse border border-gray-700">
-        <thead className="bg-gray-800">
+      <div className="flex flex-row gap-5">
+        <h1 className="text-2xl font-bold mb-4">Жалобы</h1>
+        <PageButton path="/channels" text="Каналы"></PageButton>
+        <SortDropdown onSortChange={(order) => setSortOrder(order)} />
+      </div>
+
+      <table className="table-fixed w-full border-collapse border border-gray-700">
+        <thead className="bg-gray-800 select-none">
           <tr>
-            <th className="border border-gray-700 px-4 py-2 text-left">
-              Проблема
+            <th className="border border-gray-700 py-2 px-4 text-center w-[120px] min-w-[90px]">
+              Статус
             </th>
-            <th className="border border-gray-700 px-4 py-2 text-left"></th>
+            <th className="border border-gray-700 p-2 text-left">Проблема</th>
+            <th className="border border-gray-700 text-left w-[100px] md:hidden"></th>
           </tr>
         </thead>
         <tbody>
-          {data.map((row, index) => (
-            <tr key={index} className="hover:bg-gray-800">
-              <td className="border border-gray-700 px-4 py-2">
-                {row.message}
+          {paginatedData.map((row, index) => (
+            <tr
+              key={index}
+              className="hover:bg-gray-800"
+              onClick={() => {
+                setWindowOpen(!isWindowOpened);
+                setCurInfo(Number(("button_" + index).split("_")[1]));
+              }}
+            >
+              <td className="border border-gray-700 p-2 w-[90px]">
+                <Badge className="w-full" type={row.status}></Badge>
               </td>
-              <td className="border border-gray-700 flex justify-center px-4 py-2">
+              <td className="border gap-2 border-gray-700 px-4 py-2">
+                <div className="gap-2 flex flex-row">
+                  <Important
+                    value={row.fire}
+                    className="flex-shrink-0 w-6 h-6"
+                  />
+
+                  <p className="truncate overflow-hidden whitespace-nowrap">
+                    {row.message}
+                  </p>
+                </div>
+              </td>
+              <td className="border border-gray-700 flex justify-center h-[66px] md:hidden">
                 <button
                   id={"button_" + index}
-                  className="text-[24pt] cursor-pointer border-none bg-none"
+                  className="text-[24pt] w-full h-full cursor-pointer border-none bg-none"
                   onClick={(event) => {
                     setWindowOpen(!isWindowOpened);
                     setCurInfo(
@@ -172,6 +278,30 @@ export default function Index() {
           ))}
         </tbody>
       </table>
+
+      <div className="p-4 z-10">
+        <div className="flex justify-center items-center gap-2 text-sm bg-gray-900 py-2 rounded shadow">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+            className="px-3 py-1 rounded disabled:opacity-40 bg-gray-700 hover:bg-gray-600 active:bg-gray-800"
+            disabled={currentPage === 0}
+          >
+            ← Назад
+          </button>
+          <span className="text-center">
+            Страница {currentPage + 1} из {pageCount}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((p) => Math.min(pageCount - 1, p + 1))
+            }
+            className="px-3 py-1 rounded disabled:opacity-40 bg-gray-700 hover:bg-gray-600 active:bg-gray-800"
+            disabled={currentPage === pageCount - 1}
+          >
+            Вперёд →
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
