@@ -57,7 +57,7 @@ class DeepSeekClient:
 
     def __get_base_headers(self):
         return {
-            "Authorization": f'Bearer self.__config.deep_seek_token',
+            "Authorization": f'Bearer {self.__config.deep_seek_token}',
             "Content-Type": "application/json",
         }
     
