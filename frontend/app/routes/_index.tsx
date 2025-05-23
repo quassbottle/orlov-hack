@@ -167,8 +167,10 @@ export default function Index() {
                 <div className="text-wrap">{data[curInfo].longMessage}</div>
               </div>
               <div className="justify-end flex flex-col gap-4">
-                <p className=" text-gray-400">
-                  Дата: {data[curInfo].created_at}
+                <p className=" text-gray-400 text-sm">
+                  Местоположение: {data[curInfo].address} <br />
+                  Дата: {data[curInfo].created_at} | Источник:{" "}
+                  {data[curInfo].source}
                 </p>
                 {data[curInfo].status !== "DONE" && (
                   <Form method="post">
