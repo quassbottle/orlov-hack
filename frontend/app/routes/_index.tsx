@@ -28,7 +28,20 @@ export const loader: LoaderFunction = async ({ request }) => {
   const order = url.searchParams.get("order") === "desc" ? "desc" : "asc";
 
   const raw = await clickhouse.getTableInfo();
-  let filtered = raw;
+  const fire = await getFireMessageIds();
+
+  let filtered = await Promise.all(
+    raw.map(async (row) => ({
+      source: row.source,
+      message: row.problem!,
+      created_at: new Date(row.created_at).toLocaleString("ru-RU"),
+      longMessage: row.original_text!,
+      address: row.location ?? "—",
+      status: (await status.get({ messageId: row.uuid })).status as BadgeType,
+      uuid: row.uuid,
+      fire: fire.includes(row.uuid) ? 1 : 0,
+    }))
+  );
 
   if (dateStart) {
     const start = new Date(dateStart);
@@ -42,32 +55,18 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   if (addressFilter) {
     filtered = filtered.filter((row) =>
-      row.location?.toLowerCase().includes(addressFilter)
+      row.address?.toLowerCase().includes(addressFilter)
     );
   }
 
   filtered.sort((a, b) => {
-    const dateA = new Date(a.created_at).getTime();
-    const dateB = new Date(b.created_at).getTime();
+    if (a.fire !== b.fire) return b.fire - a.fire;
+    const dateA = new Date(a.created_at!).getTime();
+    const dateB = new Date(b.created_at!).getTime();
     return order === "asc" ? dateA - dateB : dateB - dateA;
   });
 
-  const fire = await getFireMessageIds();
-
-  const result = Promise.all(
-    filtered.map(async (row) => ({
-      source: row.source,
-      message: row.problem!,
-      created_at: new Date(row.created_at).toLocaleString("ru-RU"),
-      longMessage: row.original_text!,
-      address: row.location ?? "—",
-      status: (await status.get({ messageId: row.uuid })).status as BadgeType,
-      uuid: row.uuid,
-      fire: fire.includes(row.uuid) ? 1 : 0,
-    }))
-  );
-
-  return result;
+  return filtered;
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -143,7 +142,6 @@ export default function Index() {
                   setWindowOpen(!isWindowOpened);
                 }}
               >
-                ×
               </button>
             </div>
             <div className="w-full h-[85%] flex items-center justify-center">
