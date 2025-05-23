@@ -12,14 +12,16 @@ def get_data():
     }
 
     client = Client(**connection_params)
-    result = []
+    res = []
 
     try:
         query = "SELECT * FROM default.messages"
         result = client.execute(query)
-    
+
+        print(result)
+
         for row in result:
-           result.append(Message(**row)) 
+           res.append(Message(**row)) 
 
     except Exception as e:
         print(f"Ошибка при выполнении запроса: {e}")
