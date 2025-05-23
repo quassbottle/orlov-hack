@@ -8,6 +8,8 @@ from kafka.analytics.consumer import consume_all_messages, create_consumer
 from config.model import Config
 from sklearn.metrics.pairwise import cosine_similarity
 
+from repository.clickhouse.clickhouse import get_data
+
 class SimilaritiesService:
     __config: Config
     __sentenceTransformer: SentenceTransformer
@@ -19,8 +21,9 @@ class SimilaritiesService:
         self.__stop_words = stop_words
 
     def parse(self):
-        consumer = create_consumer(self.__config)
-        data = consume_all_messages(consumer, self.__config.click_kafka_topic)
+        # consumer = create_consumer(self.__config)
+        data = get_data()
+        # consume_all_messages(consumer, self.__config.click_kafka_topic)
 
         df = self.__parse_data(data)
         embeddings = self.__generate_embeddings(df)
