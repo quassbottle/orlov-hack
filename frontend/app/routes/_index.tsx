@@ -109,7 +109,7 @@ export default function Index() {
   const [curInfo, setCurInfo] = useState(0);
 
   return (
-    <div className="p-4 text-white bg-gray-900 min-h-screen">
+    <div className="text-white bg-gray-900 min-h-screen">
       {isWindowOpened ? (
         <div className="fixed flex justify-end top-0 h-screen w-screen flex-row right-0 bg-black/75">
           <div
@@ -203,11 +203,11 @@ export default function Index() {
       ) : (
         <></>
       )}
-      <div className="flex flex-row gap-5">
+      <div className="flex flex-row gap-4">
         <h1 className="text-2xl font-bold mb-4">Жалобы</h1>
         <PageButton path="/channels" text="Каналы"></PageButton>
       </div>
-      <table className="table-auto w-full border-collapse border border-gray-700">
+      <table className="table-auto w-[90dvw] border-collapse border border-gray-700">
         <thead className="bg-gray-800">
           <tr>
             <th className="border border-gray-700 px-4 py-2 text-center">
