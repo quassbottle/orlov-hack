@@ -243,7 +243,7 @@ export default function Index() {
               className="hover:bg-gray-800"
               onClick={() => {
                 setWindowOpen(!isWindowOpened);
-                setCurInfo(Number(("button_" + index).split("_")[1]));
+                setCurInfo(index + currentPage * itemsPerPage);
               }}
             >
               <td className="border border-gray-700 p-2 w-[90px]">
