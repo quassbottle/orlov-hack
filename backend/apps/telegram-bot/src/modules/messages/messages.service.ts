@@ -18,3 +18,4 @@ export class MessagesService {
         return this.clickhouse.query<MessageModel[]>(`SELECT * FROM messages`);
     }
 }
+
