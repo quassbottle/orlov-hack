@@ -65,12 +65,12 @@ export default function Channels() {
         <></>
       )}
       <div className="flex flex-row justify-between">
-        <div className="flex flex-row pb-0 gap-4">
+        <div className="flex flex-row pl-3 pt-3 pb-0 gap-4">
           <PageButton path="/" text="Жалобы"></PageButton>
           <h1 className="text-2xl font-bold mb-4">Каналы</h1>
         </div>
         <button
-          className="flex h-6 px-2 hover:text-slate-500"
+          className="flex h-6 pr-4 pt-3 hover:text-slate-500"
           onClick={() => {
             setOpen(!isOpen);
           }}
