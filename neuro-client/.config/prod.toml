@@ -12,5 +12,5 @@ socket_timeout_ms = 10000
 session_timeout_ms = 6000
 
 [deep_seek]
-url = '${AI_ENDPOINT}'
+url = 'https://router.huggingface.co/novita/v3/openai/chat/completions'
 token = "${HF_TOKEN}"

@@ -18,27 +18,28 @@ class DeepSeekClient:
             return False
         
         response = requests.post(
-            f'{self.__config.deep_seek_url}/chat', 
+            f'{self.__config.deep_seek_url}', 
             headers=self.__get_base_headers(),
             json=self.__get_deep_seek_payload(self.__get_deep_seek_is_accident_message(text))
         )
 
 
-        print(response, response.text, f'{self.__config.deep_seek_url}/chat')
+        # print(response, response.text, f'{self.__config.deep_seek_url}/chat')
 
         if response.status_code != 200:
             raise BadRequestException 
 
-        percent = response.json()['response']
+        # percent = response.json()['response']
+        percent = response.json()['choices'][0]['message']['content']
         true_percent = re.sub(r"[^\d]", "", percent)
 
         print(f'[{true_percent}]: {text}')
 
-        return int(true_percent) >= 60
+        return int(true_percent) >= 70
 
     def get_accident_info(self, text: str) -> AccidentInfo:
         response = requests.post(
-            f'{self.__config.deep_seek_url}/chat',
+            f'{self.__config.deep_seek_url}',
             headers=self.__get_base_headers(),
             json=self.__get_deep_seek_payload(self.__get_deep_seek_accident_info(text))
         )
@@ -47,20 +48,29 @@ class DeepSeekClient:
             print(response, response.text)
             raise BadRequestException 
 
-        content = response.json()['response']
+        content = response.json()['choices'][0]['message']['content']
+        # content = response.json()['response']
         content = content.replace('```json', '').replace('```', '')
 
         return AccidentInfo(**json.loads(content))
 
     def __get_base_headers(self):
         return {
-            "Authorization": self.__config.deep_seek_token,
+            "Authorization": f'Bearer self.__config.deep_seek_token',
             "Content-Type": "application/json",
         }
     
     def __get_deep_seek_payload(self, message: str):
+        # return {
+        #    "prompt": message 
+        # }
         return {
-           "prompt": message 
+            "messages": [{
+                "role": "user",
+                "content": message
+            }],
+            "model": "deepseek/deepseek-v3-turbo",
+            "stream": False
         }
     
     def __get_deep_seek_is_accident_message(self, original_message: str) -> str:
