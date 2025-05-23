@@ -145,6 +145,7 @@ export class BotUpdate {
 
         if (questions?.length > 0) {
             userState.pendingQuestions = questions.slice(0, this.MAX_QUESTIONS);
+
             await this.askNextQuestion(ctx, userId);
         } else {
             await this.finishConversation(ctx);

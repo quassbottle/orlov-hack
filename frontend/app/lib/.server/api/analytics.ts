@@ -15,10 +15,8 @@ interface SimilaritiesData {
 }
 
 export async function getFireMessageIds() {
-  const response = await client.get<SimilaritiesData>("similarities/all");
+  const response = await client.get<SimilaritiesData>("/similarities/all");
   const { data } = response;
-
-  console.log(data);
 
   const entries = Object.entries(data);
 
