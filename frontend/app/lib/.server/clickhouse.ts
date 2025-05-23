@@ -10,8 +10,6 @@ import { singleton } from "./singleton";
 import { randomUUID } from "crypto";
 import { MessageRecord } from "./api/types";
 
-
-
 export interface ClickHouseModuleOptions
   extends NodeClickHouseClientConfigOptions {}
 
@@ -43,20 +41,39 @@ export class ClickHouseService {
     return result.data;
   }
 
-    public async getTableInfo(): Promise<MessageRecord[]> {
-        const query = `SELECT * FROM messages`;
-        return await this.query<MessageRecord>(query);
-    }
+  public async getTableInfo(): Promise<MessageRecord[]> {
+    const query = `SELECT * FROM messages`;
+    return this.query<MessageRecord>(query);
+  }
 
-    public async getSortedTableInfoByDate(order: 'asc' | 'desc'): Promise<MessageRecord[]> {
-        const query = `
+  private readonly BASE_LIMIT = 7;
+
+  public async getPagesCount() {
+    const query = `SELECT count(*) as count FROM messages`;
+    const [result] = await this.query<{ count: number }>(query);
+
+    return Math.floor(result.count / 7) + 1;
+  }
+
+  public async getMessages(params: {
+    order?: "asc" | "desc";
+    limit?: number;
+    offset?: number;
+  }): Promise<MessageRecord[]> {
+    const { order, limit, offset } = params;
+
+    const orderBy = order ? `ORDER BY created_at ${order.toUpperCase()}` : "";
+
+    const query = `
             SELECT *
             FROM messages
-            ORDER BY created_at ${order.toUpperCase()}
+            ${orderBy}
+            LIMIT ${limit ?? this.BASE_LIMIT}
+            OFFSET ${offset ?? 0}
         `;
-        return await this.query<MessageRecord>(query);
-    }
-    
+
+    return this.query<MessageRecord>(query);
+  }
 
   public async insert<TData extends InsertValues<Readable, unknown>>(params: {
     values: TData;
