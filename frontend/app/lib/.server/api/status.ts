@@ -1,4 +1,4 @@
-import { BadgeType } from "~/lib/.client/components/Badges";
+import { BadgeType } from "~/components/Badges";
 import { prisma } from "../prisma";
 
 async function get(params: { messageId: string }) {

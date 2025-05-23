@@ -8,18 +8,9 @@ import { NodeClickHouseClientConfigOptions } from "@clickhouse/client/dist/confi
 import { Readable } from "stream";
 import { singleton } from "./singleton";
 import { randomUUID } from "crypto";
+import { MessageRecord } from "./api/types";
 
-export interface MessageRecord {
-  uuid: string;
-  source?: string;
-  additional_data?: string;
-  created_at: string;
-  original_text?: string;
-  post_date?: string;
-  problem?: string;
-  location?: string;
-  problem_date?: string;
-}
+
 
 export interface ClickHouseModuleOptions
   extends NodeClickHouseClientConfigOptions {}
@@ -52,10 +43,20 @@ export class ClickHouseService {
     return result.data;
   }
 
-  public async getTableInfo(): Promise<MessageRecord[]> {
-    const query = `SELECT * FROM messages`;
-    return this.query<MessageRecord>(query);
-  }
+    public async getTableInfo(): Promise<MessageRecord[]> {
+        const query = `SELECT * FROM messages`;
+        return await this.query<MessageRecord>(query);
+    }
+
+    public async getSortedTableInfoByDate(order: 'asc' | 'desc'): Promise<MessageRecord[]> {
+        const query = `
+            SELECT *
+            FROM messages
+            ORDER BY created_at ${order.toUpperCase()}
+        `;
+        return await this.query<MessageRecord>(query);
+    }
+    
 
   public async insert<TData extends InsertValues<Readable, unknown>>(params: {
     values: TData;
