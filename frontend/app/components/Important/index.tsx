@@ -1,3 +1,5 @@
+import { Tooltip } from "react-tooltip";
+
 export default function Important({
   className,
   value,
@@ -10,8 +12,12 @@ export default function Important({
   return (
     value > max && (
       <>
+        <Tooltip id="important" />
         <svg
-          className={className}
+          data-tooltip-id="important"
+          data-tooltip-content="Важная задача: много людей жалуются на эту проблему"
+          data-tooltip-place="top"
+          className={`${className}`}
           width="800px"
           height="800px"
           viewBox="-33 0 255 255"
