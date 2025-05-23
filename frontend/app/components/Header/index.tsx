@@ -7,10 +7,9 @@ type IPageButton = {
 
 export const PageButton = (data: IPageButton) => {
   const navigator = useNavigate();
-  console.log(data.path);
   return (
     <button
-      className="pb-[12px] text-[15pt]"
+      className="pb-[12px] text-2xl text-gray-700 font-bold mb-1 hover:text-gray-400"
       onClick={() => {
         navigator(data.path);
       }}
