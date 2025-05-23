@@ -2,11 +2,11 @@ import { ActionFunctionArgs, LoaderFunction } from "@remix-run/node";
 import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
 import { clickhouse } from "~/lib/.server/clickhouse";
-import Fire from "public/fire.svg";
 import { Badge, BadgeType } from "~/components/Badges";
 import { status } from "~/lib/.server/api/status";
 import { toast } from "react-toastify";
 import { PageButton } from "~/components/Header";
+import Important from "~/components/Important";
 
 interface TableRow {
   created_at?: string;
@@ -15,6 +15,7 @@ interface TableRow {
   longMessage?: string;
   status: BadgeType;
   uuid: string;
+  fire: number; // TODO
 }
 
 // Сортировка по улице и номеру
@@ -62,6 +63,7 @@ export const loader: LoaderFunction = async ({ request }) => {
         longMessage: row.original_text!,
         status: (await status.get({ messageId: row.uuid })).status as BadgeType,
         uuid: row.uuid,
+        fire: Math.random(),
       })
     )
   );
@@ -118,10 +120,10 @@ export default function Index() {
               setWindowOpen(!isWindowOpened);
             }}
           ></div>
-          <div className="animate-slide flex flex-col w-1/2 h-screen rounded-md bg-gray-900">
-            <div className="flex flex-row justify-end">
+          <div className="animate-slide relative flex flex-col w-1/2 h-screen rounded-md bg-gray-900">
+            <div className="absolute top-0 right-4">
               <button
-                className="text-[30pt] mr-4"
+                className="text-[30pt] items-center"
                 onClick={() => {
                   setWindowOpen(!isWindowOpened);
                 }}
@@ -129,18 +131,18 @@ export default function Index() {
                 ×
               </button>
             </div>
-            <div className="text-2xl pb-[30%] mx-4">Место для карты</div>
-            <div className="bg-gray-800 flex flex-col rounded-bl-md justify-between overflow-y-auto h-full overflow-x-hidden p-8">
+            <div className="w-full h-[85%] flex items-center justify-center">
+              <p className="text-2xl text-gray-600 select-none">нет локации</p>
+            </div>
+            <div className="bg-gray-800 flex flex-col rounded-bl-md rounded-t-md justify-between overflow-y-auto h-full overflow-x-hidden p-8">
               <div className="flex flex-col gap-5">
                 <div className="flex items-center w-full">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                    {isImportant && (
-                      <img
-                        alt="fire"
-                        className="flex-shrink-0 w-6 h-6"
-                        src={Fire}
-                      />
-                    )}
+                    <Important
+                      value={data[curInfo].fire}
+                      className="flex-shrink-0 w-6 h-6"
+                    />
+
                     <div className="text-xl truncate">
                       {data[curInfo].message}
                     </div>
@@ -208,7 +210,7 @@ export default function Index() {
         <PageButton path="/channels" text="Каналы"></PageButton>
       </div>
       <table className="table-auto w-full border-collapse border border-gray-700">
-        <thead className="bg-gray-800">
+        <thead className="bg-gray-800 select-none">
           <tr>
             <th className="border border-gray-700 px-4 py-2 text-center">
               Статус
@@ -232,8 +234,15 @@ export default function Index() {
               <td className="border border-gray-700 px-4 py-2">
                 <Badge className="w-[90px]" type={row.status}></Badge>
               </td>
-              <td className="border border-gray-700 px-4 py-2">
-                {row.message}
+              <td className="border gap-2 border-gray-700 px-4 py-2">
+                <div className="gap-2 flex flex-row">
+                  <Important
+                    value={row.fire}
+                    className="flex-shrink-0 w-6 h-6"
+                  />
+
+                  {row.message}
+                </div>
               </td>
               <td className="border border-gray-700 flex justify-center px-4 py-2">
                 <button
