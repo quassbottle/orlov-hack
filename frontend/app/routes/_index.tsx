@@ -16,8 +16,7 @@ interface TableRow {
   status: BadgeType;
   uuid: string;
   address?: string;
-  fire: number; // TODO
-  uuid: string;
+  fire: number;
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -101,25 +100,25 @@ export default function Index() {
     (currentPage + 1) * itemsPerPage
   );
 
-  const updateParams = (custom?: Record<string, string | null>) => {
-    const params = new URLSearchParams();
-    if (startDate) params.set("start", startDate);
-    if (endDate) params.set("end", endDate);
-    if (address) params.set("address", address);
-    if (custom) {
-      for (const key in custom) {
-        if (custom[key] === null) params.delete(key);
-        else params.set(key, custom[key]!);
-      }
-    }
-    params.set("order", sortOrder);
-    params.set("page", currentPage.toString());
-    setSearchParams(params, { replace: true, preventScrollReset: true });
-  };
 
-  useEffect(() => {
-    updateParams();
-  }, [sortOrder, currentPage]);
+    const updateParams = (custom?: Record<string, string | null>) => {
+        const params = new URLSearchParams();
+        if (startDate) params.set("start", startDate);
+        if (endDate) params.set("end", endDate);
+        if (address) params.set("address", address);
+        if (custom) {
+            for (const key in custom) {
+                if (custom[key] === null) params.delete(key);
+                else params.set(key, custom[key]!);
+            }
+        }
+        params.set("order", sortOrder);
+        params.set("page", currentPage.toString());
+        setSearchParams(params);
+    };
+    useEffect(() => {
+        updateParams();
+    }, [sortOrder, currentPage]);
 
   const [isWindowOpened, setWindowOpen] = useState(false);
   const [curInfo, setCurInfo] = useState(0);
