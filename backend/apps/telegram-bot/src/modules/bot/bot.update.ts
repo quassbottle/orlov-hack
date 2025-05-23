@@ -31,6 +31,7 @@ export interface ProducerModel {
 export class BotUpdate {
     private userStates = new Map<number, any>();
     private readonly apiClient: AxiosInstance;
+    private readonly analyzerClient: AxiosInstance;
     private readonly MAX_RETRIES = 1;
     private readonly RETRY_DELAY = 2000;
     private readonly MAX_QUESTIONS = 3;
@@ -44,6 +45,9 @@ export class BotUpdate {
         console.log(this.configService.get('AI_ENDPOINT'));
         this.apiClient = axios.create({
             baseURL: this.configService.getOrThrow('AI_ENDPOINT'),
+        });
+        this.analyzerClient = axios.create({
+            baseURL: this.configService.getOrThrow('ANALYZER_ENDPOINT'),
         });
     }
 
@@ -141,6 +145,7 @@ export class BotUpdate {
 
         if (questions?.length > 0) {
             userState.pendingQuestions = questions.slice(0, this.MAX_QUESTIONS);
+
             await this.askNextQuestion(ctx, userId);
         } else {
             await this.finishConversation(ctx);
@@ -148,6 +153,16 @@ export class BotUpdate {
     }
 
     private async getInfoFromAccident(text: string) {
+        const { data } = await this.analyzerClient.post<{
+            is_accident: boolean;
+        }>('/analyzer/is-accident', {
+            text,
+        });
+
+        if (!data.is_accident) {
+            return null;
+        }
+
         const prompt = `Давай из этого предложения: "${text}", ты выделишь дату, время, локацию, и основную суть очень коротко отвечай ТОЛЬКО в формате json, без лишних слов, вот тебе модель ответа {{location,datetime,info}}, datetime в формате yyyy-MM-ddThh:mm:ss. Ответ должен быть в виде обычного текста и не содержать markdown вставки`;
 
         const response = await this.apiClient.post('/chat', {
@@ -282,13 +297,21 @@ export class BotUpdate {
             return;
         }
 
+        const result = await this.getInfoFromAccident(finalComplaint);
+
+        if (!result) {
+            await this.sendMessageWithRetry(
+                ctx,
+                `Обращение нерелевантно. Обратитесь с другой проблемой, связанной с транспортом.`,
+            );
+            return;
+        }
+
         await this.sendMessageWithRetry(
             ctx,
-            `Спасибо! Вот итоговая формулировка жалобы:\n\n${finalComplaint}`,
+            `Спасибо! Ваша жалоба была направлена в соответствующее ведомство. Вот итоговая формулировка жалобы:\n\n${finalComplaint}`,
             Markup.removeKeyboard(),
         );
-
-        await this.getInfoFromAccident(finalComplaint);
 
         this.userStates.delete(userId);
     }
@@ -296,6 +319,7 @@ export class BotUpdate {
     private async cancel(@Ctx() ctx: Context) {
         const userId = ctx.from!.id;
         this.userStates.delete(userId);
+
         await this.sendMessageWithRetry(
             ctx,
             'Разговор отменен. Начать снова — команда /start',
