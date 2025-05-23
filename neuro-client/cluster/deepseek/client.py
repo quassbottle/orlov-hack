@@ -27,6 +27,7 @@ class DeepSeekClient:
         # print(response, response.text, f'{self.__config.deep_seek_url}/chat')
 
         if response.status_code != 200:
+            print(response.status_code, response.text, response)
             raise BadRequestException 
 
         # percent = response.json()['response']
