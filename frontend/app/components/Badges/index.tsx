@@ -24,7 +24,7 @@ export const Badge = (data: IBadge) => {
     <div
       className={`${BadgesTypes[data.type]} ${
         data.className ? data.className : ""
-      } w-[90px] text-white px-2 rounded-md py-2 text-[10pt] text-center align-middle items-center`}
+      } w-[90px] select-none text-white px-2 rounded-md py-2 text-[10pt] text-center align-middle items-center`}
     >
       {BadgesText[data.type]}
     </div>

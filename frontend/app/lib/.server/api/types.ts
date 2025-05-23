@@ -7,4 +7,5 @@ export interface MessageRecord {
     problem?: string;
     location?: string;
     problem_date?: string;
+    uuid: string;
 }

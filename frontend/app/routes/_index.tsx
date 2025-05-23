@@ -1,15 +1,23 @@
-import { LoaderFunction, json } from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import { ActionFunctionArgs, LoaderFunction, json } from "@remix-run/node";
+import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import SortDropdown from "~/components/dropdown";
 import { clickhouse } from "~/lib/.server/clickhouse";
+import { Badge, BadgeType } from "~/components/Badges";
+import { status } from "~/lib/.server/api/status";
+import Important from "~/components/Important";
+import { PageButton } from "~/components/Header";
 
 interface TableRow {
     created_at?: string;
     message?: string;
     source?: string;
     longMessage?: string;
+    status: BadgeType;
+    uuid: string;
     address?: string;
+    fire: number; // TODO
+    uuid: string;
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -44,15 +52,78 @@ export const loader: LoaderFunction = async ({ request }) => {
         return order === "asc" ? dateA - dateB : dateB - dateA;
     });
 
-    const result = filtered.map((row) => ({
-        source: row.source,
-        message: row.problem!,
-        created_at: new Date(row.created_at).toLocaleString("ru-RU"),
-        longMessage: row.original_text!,
-        address: row.location ?? "—",
-    }));
+    const result = Promise.all(
+        filtered.map(async (row) => ({
+            source: row.source,
+            message: row.problem!,
+            created_at: new Date(row.created_at).toLocaleString("ru-RU"),
+            longMessage: row.original_text!,
+            address: row.location ?? "—",
+            status: (await status.get({ messageId: row.uuid }))
+                .status as BadgeType,
+            uuid: row.uuid,
+            fire: Math.random(),
+        }))
+    );
 
     return result;
+};
+
+// export default function Index() {
+
+//     // return (
+//     //     <div className="p-4 text-white bg-gray-900 h-screen flex flex-col relative">
+
+//     //         <div className="flex-grow h-full overflow-auto pb-32">
+//     //             <table className="table-fixed w-full h-full border-collapse border border-gray-700 text-xs sm:text-sm md:text-base">
+//     //                 <thead className="bg-gray-800">
+//     //                     <tr>
+//     //                         <th className="w-[65%] border border-gray-700 px-2 sm:px-4 py-2 text-left">
+//     //                             Проблема
+//     //                         </th>
+//     //                         <th className="w-[25%] border border-gray-700 px-2 sm:px-4 py-2 text-left">
+//     //                             Адрес
+//     //                         </th>
+//     //                         <th className="w-[10%] border border-gray-700 px-2 py-2 text-center"></th>
+//     //                     </tr>
+//     //                 </thead>
+//     //                 <tbody className="align-top text-xs sm:text-sm md:text-base">
+//     //                     {paginatedData.map((row, index) => (
+//     //                         <tr key={index} className="hover:bg-gray-800">
+//     //                             <td className="border border-gray-700 px-2 sm:px-4 py-2 align-top">
+//     //                                 <div className="overflow-hidden whitespace-normal break-words line-clamp-2 md:truncate md:line-clamp-none">
+//     //                                     {row.message}
+//     //                                 </div>
+//     //                             </td>
+//     //                             <td className="border border-gray-700 px-2 sm:px-4 py-2 align-top">
+//     //                                 <div className="overflow-hidden whitespace-normal break-words line-clamp-2 md:truncate md:line-clamp-none">
+//     //                                     {row.address}
+//     //                                 </div>
+//     //                             </td>
+//     //                             <td className="border border-gray-700 px-2 py-2 text-center align-top">
+//     //                                 <button
+//     //                                     className="text-lg sm:text-xl md:text-2xl cursor-pointer border-none bg-none"
+//     //                                     onClick={() => {
+//     //                                         setCurrentPage(0);
+//     //                                     }}
+//     //                                 >
+//     //                                     ···
+//     //                                 </button>
+//     //                             </td>
+//     //                         </tr>
+//     //                     ))}
+//     //                 </tbody>
+//     //             </table>
+//     //         </div>
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+    const formData = await request.formData();
+    const messageId = formData.get("messageId") as string;
+    const actionType = formData.get("actionType") as BadgeType;
+
+    await status.upsert({ messageId, status: actionType });
+
+    return null;
 };
 
 export default function Index() {
@@ -72,24 +143,24 @@ export default function Index() {
     );
     const [itemsPerPage, setItemsPerPage] = useState(10);
 
-    useEffect(() => {
-        const updateItemsPerPage = () => {
-            if (typeof window !== "undefined") {
-                let rowHeight = 56;
-                const width = window.innerWidth;
+    // useEffect(() => {
+    //     const updateItemsPerPage = () => {
+    //         if (typeof window !== "undefined") {
+    //             let rowHeight = 56;
+    //             const width = window.innerWidth;
 
-                if (width < 640) rowHeight = 32;
-                else if (width < 768) rowHeight = 40;
-                else if (width < 1024) rowHeight = 48;
+    //             if (width < 640) rowHeight = 32;
+    //             else if (width < 768) rowHeight = 40;
+    //             else if (width < 1024) rowHeight = 48;
 
-                const rows = Math.floor((window.innerHeight - 300) / rowHeight);
-                setItemsPerPage(rows > 0 ? rows : 1);
-            }
-        };
-        updateItemsPerPage();
-        window.addEventListener("resize", updateItemsPerPage);
-        return () => window.removeEventListener("resize", updateItemsPerPage);
-    }, []);
+    //             const rows = Math.floor((window.innerHeight - 300) / rowHeight);
+    //             setItemsPerPage(rows > 0 ? rows : 1);
+    //         }
+    //     };
+    //     updateItemsPerPage();
+    //     window.addEventListener("resize", updateItemsPerPage);
+    //     return () => window.removeEventListener("resize", updateItemsPerPage);
+    // }, []);
 
     const pageCount = Math.ceil(data.length / itemsPerPage);
     const paginatedData = data.slice(
@@ -117,56 +188,179 @@ export default function Index() {
         updateParams();
     }, [sortOrder, currentPage]);
 
+    const [isWindowOpened, setWindowOpen] = useState(false);
+    const [curInfo, setCurInfo] = useState(0);
+
     return (
-        <div className="p-4 text-white bg-gray-900 h-screen flex flex-col relative">
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold">Жалобы</h1>
+        <div className="p-4 text-white bg-gray-900 min-h-screen">
+            {isWindowOpened ? (
+                <div className="fixed flex justify-end top-0 h-screen w-screen flex-row right-0 bg-black/75">
+                    <div
+                        className="h-full w-1/2 bg-transparent"
+                        onClick={() => {
+                            setWindowOpen(!isWindowOpened);
+                        }}
+                    ></div>
+                    <div className="animate-slide relative flex flex-col w-1/2 h-screen rounded-md bg-gray-900">
+                        <div className="absolute top-0 right-4">
+                            <button
+                                className="text-[30pt] items-center"
+                                onClick={() => {
+                                    setWindowOpen(!isWindowOpened);
+                                }}
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <div className="w-full h-[85%] flex items-center justify-center">
+                            <p className="text-2xl text-gray-600 select-none">
+                                нет локации
+                            </p>
+                        </div>
+                        <div className="bg-gray-800 flex flex-col rounded-bl-md rounded-t-md justify-between overflow-y-auto h-full overflow-x-hidden p-8">
+                            <div className="flex flex-col gap-5">
+                                <div className="flex items-center w-full">
+                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                        <Important
+                                            value={data[curInfo].fire}
+                                            className="flex-shrink-0 w-6 h-6"
+                                        />
+
+                                        <div className="text-xl truncate">
+                                            {data[curInfo].message}
+                                        </div>
+                                    </div>
+                                    <div className="flex-shrink-0 ml-2">
+                                        <Badge type={data[curInfo].status} />
+                                    </div>
+                                </div>
+                                <div className="text-wrap">
+                                    {data[curInfo].longMessage}
+                                </div>
+                            </div>
+                            <div className="justify-end flex flex-col gap-4">
+                                <p className=" text-gray-400">
+                                    Дата: {data[curInfo].created_at}
+                                </p>
+                                {data[curInfo].status !== "DONE" && (
+                                    <Form method="post">
+                                        <div className="flex flex-row justify-between w-full">
+                                            <input
+                                                type="hidden"
+                                                name="messageId"
+                                                value={data[curInfo].uuid}
+                                            />
+                                            {data[curInfo].status ===
+                                                "WAITING" ||
+                                            data[curInfo].status ===
+                                                "DECLINED" ? (
+                                                <button
+                                                    type="submit"
+                                                    name="actionType"
+                                                    value="PROGRESS"
+                                                    className="rounded-md py-2 px-4 bg-green-600"
+                                                >
+                                                    Взять в работу
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="submit"
+                                                    name="actionType"
+                                                    value="DONE"
+                                                    className="rounded-md py-2 px-4 bg-green-600"
+                                                >
+                                                    Завершить
+                                                </button>
+                                            )}
+                                            {data[curInfo].status !==
+                                                "DECLINED" && (
+                                                <button
+                                                    type="submit"
+                                                    name="actionType"
+                                                    value="DECLINED"
+                                                    className="rounded-md py-2 px-4 bg-red-600"
+                                                >
+                                                    Отклонить
+                                                </button>
+                                            )}
+                                        </div>
+                                    </Form>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <></>
+            )}
+            <div className="flex flex-row gap-5">
+                <h1 className="text-2xl font-bold mb-4">Жалобы</h1>
+                <PageButton path="/channels" text="Каналы"></PageButton>
                 <SortDropdown onSortChange={(order) => setSortOrder(order)} />
             </div>
+            <table className="table-auto w-full border-collapse border border-gray-700">
+                <thead className="bg-gray-800 select-none">
+                    <tr>
+                        <th className="border border-gray-700 px-4 py-2 text-center">
+                            Статус
+                        </th>
+                        <th className="border border-gray-700 px-4 py-2 text-left">
+                            Проблема
+                        </th>
+                        <th className="border border-gray-700 px-4 py-2 text-left"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {paginatedData.map((row, index) => (
+                        <tr
+                            key={index}
+                            className="hover:bg-gray-800"
+                            onClick={() => {
+                                setWindowOpen(!isWindowOpened);
+                                setCurInfo(
+                                    Number(("button_" + index).split("_")[1])
+                                );
+                            }}
+                        >
+                            <td className="border border-gray-700 px-4 py-2">
+                                <Badge
+                                    className="w-[90px]"
+                                    type={row.status}
+                                ></Badge>
+                            </td>
+                            <td className="border gap-2 border-gray-700 px-4 py-2">
+                                <div className="gap-2 flex flex-row">
+                                    <Important
+                                        value={row.fire}
+                                        className="flex-shrink-0 w-6 h-6"
+                                    />
 
-            <div className="flex-grow h-full overflow-auto pb-32">
-                <table className="table-fixed w-full h-full border-collapse border border-gray-700 text-xs sm:text-sm md:text-base">
-                    <thead className="bg-gray-800">
-                        <tr>
-                            <th className="w-[65%] border border-gray-700 px-2 sm:px-4 py-2 text-left">
-                                Проблема
-                            </th>
-                            <th className="w-[25%] border border-gray-700 px-2 sm:px-4 py-2 text-left">
-                                Адрес
-                            </th>
-                            <th className="w-[10%] border border-gray-700 px-2 py-2 text-center"></th>
+                                    {row.message}
+                                </div>
+                            </td>
+                            <td className="border border-gray-700 flex justify-center px-4 py-2">
+                                <button
+                                    id={"button_" + index}
+                                    className="text-[24pt] cursor-pointer border-none bg-none"
+                                    onClick={(event) => {
+                                        setWindowOpen(!isWindowOpened);
+                                        setCurInfo(
+                                            Number(
+                                                (
+                                                    event.target as HTMLButtonElement
+                                                ).id.split("_")[1]
+                                            )
+                                        );
+                                    }}
+                                >
+                                    ···
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody className="align-top text-xs sm:text-sm md:text-base">
-                        {paginatedData.map((row, index) => (
-                            <tr key={index} className="hover:bg-gray-800">
-                                <td className="border border-gray-700 px-2 sm:px-4 py-2 align-top">
-                                    <div className="overflow-hidden whitespace-normal break-words line-clamp-2 md:truncate md:line-clamp-none">
-                                        {row.message}
-                                    </div>
-                                </td>
-                                <td className="border border-gray-700 px-2 sm:px-4 py-2 align-top">
-                                    <div className="overflow-hidden whitespace-normal break-words line-clamp-2 md:truncate md:line-clamp-none">
-                                        {row.address}
-                                    </div>
-                                </td>
-                                <td className="border border-gray-700 px-2 py-2 text-center align-top">
-                                    <button
-                                        className="text-lg sm:text-xl md:text-2xl cursor-pointer border-none bg-none"
-                                        onClick={() => {
-                                            setCurrentPage(0);
-                                        }}
-                                    >
-                                        ···
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            <div className="fixed bottom-16 left-0 right-0 px-4 z-10">
+                    ))}
+                </tbody>
+            </table>
+            <div className="p-4 z-10">
                 <div className="flex justify-center items-center gap-2 text-sm bg-gray-900 py-2 rounded shadow">
                     <button
                         onClick={() =>
