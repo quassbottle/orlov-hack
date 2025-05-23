@@ -57,7 +57,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const result = Promise.all(
     filtered.map(async (row) => ({
       source: row.source,
-      message: row.uuid,
+      message: row.problem!,
       created_at: new Date(row.created_at).toLocaleString("ru-RU"),
       longMessage: row.original_text!,
       address: row.location ?? "—",
