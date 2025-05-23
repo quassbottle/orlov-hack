@@ -4,11 +4,11 @@ import { hydrateRoot } from "react-dom/client";
 import { ToastContainer } from "react-toastify";
 
 startTransition(() => {
-  hydrateRoot(
-    document,
-    <StrictMode>
-      <RemixBrowser />
-      <ToastContainer />
-    </StrictMode>
-  );
+    hydrateRoot(
+        document,
+        <StrictMode>
+            <RemixBrowser />
+            <ToastContainer />
+        </StrictMode>
+    );
 });
