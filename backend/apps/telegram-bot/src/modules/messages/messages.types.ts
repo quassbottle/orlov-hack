@@ -9,3 +9,4 @@ export interface MessageModel {
 }
 
 export type MessageCreate = Omit<MessageModel, 'id' | 'created_at'>;
+
