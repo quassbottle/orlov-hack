@@ -82,13 +82,13 @@ export default function Channels() {
         <table className="w-[90dvw]">
           <thead className="bg-gray-800">
             <tr>
-              <th className="border border-gray-700 px-4 py-2 text-left">
+              <th className="border border-gray-700 px-4 py-2 text-center">
                 Источник
               </th>
-              <th className="border border-gray-700 px-4 py-2 text-left">
+              <th className="border border-gray-700 w-[85%] px-4 py-2 text-left">
                 Канал
               </th>
-              <th className="border border-gray-700 px-4 py-2 text-left"></th>
+              <th className="border border-gray-700 px-4 py-2 text-left w-[95px]"></th>
             </tr>
           </thead>
           <tbody>
