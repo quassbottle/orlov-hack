@@ -100,25 +100,24 @@ export default function Index() {
     (currentPage + 1) * itemsPerPage
   );
 
-
-    const updateParams = (custom?: Record<string, string | null>) => {
-        const params = new URLSearchParams();
-        if (startDate) params.set("start", startDate);
-        if (endDate) params.set("end", endDate);
-        if (address) params.set("address", address);
-        if (custom) {
-            for (const key in custom) {
-                if (custom[key] === null) params.delete(key);
-                else params.set(key, custom[key]!);
-            }
-        }
-        params.set("order", sortOrder);
-        params.set("page", currentPage.toString());
-        setSearchParams(params);
-    };
-    useEffect(() => {
-        updateParams();
-    }, [sortOrder, currentPage]);
+  const updateParams = (custom?: Record<string, string | null>) => {
+    const params = new URLSearchParams();
+    if (startDate) params.set("start", startDate);
+    if (endDate) params.set("end", endDate);
+    if (address) params.set("address", address);
+    if (custom) {
+      for (const key in custom) {
+        if (custom[key] === null) params.delete(key);
+        else params.set(key, custom[key]!);
+      }
+    }
+    params.set("order", sortOrder);
+    params.set("page", currentPage.toString());
+    setSearchParams(params);
+  };
+  useEffect(() => {
+    updateParams();
+  }, [sortOrder, currentPage]);
 
   const [isWindowOpened, setWindowOpen] = useState(false);
   const [curInfo, setCurInfo] = useState(0);
@@ -133,7 +132,7 @@ export default function Index() {
               setWindowOpen(!isWindowOpened);
             }}
           ></div>
-          <div className="animate-slide relative flex flex-col w-1/2 h-screen rounded-md bg-gray-900">
+          <div className="animate-slide relative flex flex-col w-1/2 h-screen rounded-md bg-gray-900 md:w-full">
             <div className="absolute top-0 right-4">
               <button
                 className="text-[30pt] items-center"
@@ -231,7 +230,7 @@ export default function Index() {
               Статус
             </th>
             <th className="border border-gray-700 p-2 text-left">Проблема</th>
-            <th className="border border-gray-700 text-left w-[100px]"></th>
+            <th className="border border-gray-700 text-left w-[100px] md:hidden"></th>
           </tr>
         </thead>
         <tbody>
@@ -259,7 +258,7 @@ export default function Index() {
                   </p>
                 </div>
               </td>
-              <td className="border border-gray-700 flex justify-center h-[66px]">
+              <td className="border border-gray-700 flex justify-center h-[66px] md:hidden">
                 <button
                   id={"button_" + index}
                   className="text-[24pt] w-full h-full cursor-pointer border-none bg-none"
