@@ -318,6 +318,7 @@ export class BotUpdate {
     private async cancel(@Ctx() ctx: Context) {
         const userId = ctx.from!.id;
         this.userStates.delete(userId);
+
         await this.sendMessageWithRetry(
             ctx,
             'Разговор отменен. Начать снова — команда /start',

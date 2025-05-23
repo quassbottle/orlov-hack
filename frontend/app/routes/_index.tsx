@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, LoaderFunction, json } from "@remix-run/node";
+import { ActionFunctionArgs, LoaderFunction } from "@remix-run/node";
 import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import SortDropdown from "~/components/dropdown";
@@ -7,6 +7,7 @@ import { Badge, BadgeType } from "~/components/Badges";
 import { status } from "~/lib/.server/api/status";
 import Important from "~/components/Important";
 import { PageButton } from "~/components/Header";
+import { getFireMessageIds } from "~/lib/.server/api/analytics";
 
 interface TableRow {
   created_at?: string;
@@ -51,16 +52,18 @@ export const loader: LoaderFunction = async ({ request }) => {
     return order === "asc" ? dateA - dateB : dateB - dateA;
   });
 
+  const fire = await getFireMessageIds();
+
   const result = Promise.all(
     filtered.map(async (row) => ({
       source: row.source,
-      message: row.problem!,
+      message: row.uuid,
       created_at: new Date(row.created_at).toLocaleString("ru-RU"),
       longMessage: row.original_text!,
       address: row.location ?? "—",
       status: (await status.get({ messageId: row.uuid })).status as BadgeType,
       uuid: row.uuid,
-      fire: Math.random(),
+      fire: fire.includes(row.uuid) ? 1 : 0,
     }))
   );
 
