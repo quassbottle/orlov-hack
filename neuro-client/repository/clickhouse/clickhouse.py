@@ -4,7 +4,7 @@ from kafka.messages.model import Message
 
 def get_data():
     connection_params = {
-        'host': 'clickhouse:9000', 
+        'host': 'localhost:8123', 
         'user': 'admin',    
         'password': 'password',       
         'database': 'default' 
