@@ -83,3 +83,4 @@ class DeepSeekClient:
         '''
     def __get_deep_seek_accident_info(self, original_message: str) -> str:
         return f'Давай из этого предложения: "{original_message}", ты выделишь дату, время, локацию, и основную суть очень коротко отвечай ТОЛЬКО в формате json, без лишних слов, вот тебе модель ответа {{location,datetime,info}}, datetime в формате yyyy-MM-ddThh:mm:ss'
+

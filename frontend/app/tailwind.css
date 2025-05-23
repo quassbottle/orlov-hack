@@ -4,7 +4,7 @@
 
 html,
 body {
-  @apply px-12 py-4;
+  @apply lg:px-12 lg:py-4 sm:p-2;
   @apply bg-gray-900;
 
   @media (prefers-color-scheme: dark) {
