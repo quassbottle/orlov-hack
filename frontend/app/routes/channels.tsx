@@ -98,7 +98,7 @@ export default function Channels() {
                   {item.source ? item.source : "Telegram"}
                 </td>
                 <td className="p-3 ">
-                  <a href={"t.me/" + item.tag}>{item.tag}</a>
+                  <a href={"https://t.me/" + item.tag}>{item.tag}</a>
                 </td>
                 <td className="flex p-3 justify-center">
                   <img
